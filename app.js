@@ -92,9 +92,12 @@ module.exports.handler = async (event, context, callback) => {
   // const handler = await awsLambdaReceiver.start();
   // return handler(event, context, callback);
   return {
-    statusCode: 200,
+    statusCode: 307,
     body: JSON.stringify({
       message: 'メッセージを送信しました',
     }),
+    Headers: {
+      'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/entrance.html'
+    }
   };
 }
