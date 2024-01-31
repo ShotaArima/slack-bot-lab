@@ -96,7 +96,7 @@ module.exports.handler = async (event, context, callback) => {
     body: JSON.stringify({
       message: 'メッセージを送信しました',
     }),
-    Headers: {
+    headers: {
       'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/entrance.html'
     }
   };
