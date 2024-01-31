@@ -68,11 +68,27 @@ app.action('button_click', async ({ body, ack, say }) => {
 
 // Lambda 関数のイベントを処理します
 module.exports.handler = async (event, context, callback) => {
-  await app.client.chat.postMessage({
-    token: process.env.SLACK_BOT_TOKEN,
-    channel: 'C06FLR2DGUX',
-    text: 'Hello world!'
-  });
+  console.log(event.queryStringParameters);
+  if(event.queryStringParameters.act==="entrance"){
+    await app.client.chat.postMessage({
+      token: process.env.SLACK_BOT_TOKEN,
+      channel: 'C06FLR2DGUX',
+      text: '入室しました'
+    });
+  }
+  else if (event.queryStringParameters.act==="logout")
+  {
+    await app.client.chat.postMessage({
+      token: process.env.SLACK_BOT_TOKEN,
+      channel: 'C06FLR2DGUX',
+      text: '退室しました'
+    });
+  }
+  // await app.client.chat.postMessage({
+  //   token: process.env.SLACK_BOT_TOKEN,
+  //   channel: 'C06FLR2DGUX',
+  //   text: 'Hello world!'
+  // });
   // const handler = await awsLambdaReceiver.start();
   // return handler(event, context, callback);
   return {
