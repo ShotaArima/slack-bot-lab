@@ -69,12 +69,22 @@ app.action('button_click', async ({ body, ack, say }) => {
 // Lambda 関数のイベントを処理します
 module.exports.handler = async (event, context, callback) => {
   console.log(event.queryStringParameters);
-  if(event.queryStringParameters.act==="entrance"){
+  if(event.queryStringParameters.act==="entrance")
+  {
     await app.client.chat.postMessage({
       token: process.env.SLACK_BOT_TOKEN,
       channel: 'C06FLR2DGUX',
       text: '入室しました'
     });
+    return {
+      statusCode: 307,
+      body: JSON.stringify({
+        message: 'メッセージを送信しました',
+      }),
+      headers: {
+        'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/logout.html'
+      }
+    };
   }
   else if (event.queryStringParameters.act==="logout")
   {
@@ -83,6 +93,16 @@ module.exports.handler = async (event, context, callback) => {
       channel: 'C06FLR2DGUX',
       text: '退室しました'
     });
+    return {
+      statusCode: 307,
+      body: JSON.stringify({
+        message: 'メッセージを送信しました',
+      }),
+      headers:
+      {
+        'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/entrance.html'
+      }
+    };
   }
   // await app.client.chat.postMessage({
   //   token: process.env.SLACK_BOT_TOKEN,
@@ -91,13 +111,5 @@ module.exports.handler = async (event, context, callback) => {
   // });
   // const handler = await awsLambdaReceiver.start();
   // return handler(event, context, callback);
-  return {
-    statusCode: 307,
-    body: JSON.stringify({
-      message: 'メッセージを送信しました',
-    }),
-    headers: {
-      'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/entrance.html'
-    }
-  };
+  
 }
