@@ -2,8 +2,8 @@
 このディレクトリでは、Lambda関数によってRDBのSQLiteにアクセスするためのもので、Express-Generatorによって作成されています。
 
 ## 操作方法
-    1. `npm start`によって実行開始
-    2. `http://localhost:3000/slack/`にアクセス
+1. `npm start`によって実行開始
+2. `http://localhost:3000/slack/`にアクセス
 
 ## ファイル構成
 
