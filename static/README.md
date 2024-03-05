@@ -27,3 +27,5 @@ CSSや画像を置きます。
 ### app.js
 メインのプログラムです。Expressの設定周りを担っています。
 
+### 参考文献
+- [Node.js基本編 Express+SQLiteで超定番のTo Doメモアプリを作る](https://qiita.com/hisashi_matsui/items/79cc7b4b95a195b51535)
