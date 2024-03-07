@@ -39,3 +39,6 @@ app.use(function(err, req, res, next) {
 });
 
 module.exports = app;
+var slackRouter = require('./routes/slack');
+
+app.use('/slack', slackRouter);
