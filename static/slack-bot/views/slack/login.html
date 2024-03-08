@@ -1,20 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Page</title>
-</head>
-<body>
-    <h2>Login Page</h2>
-    <form action="../" method="post">
-        <label for="ic_id">IC ID:</label>
-        <input type="text" id="ic_id" name="ic_id" required>
-        <br>
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required>
-        <br>
-        <button type="submit">Login</button>
-    </form>
-</body>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Login Page</title>
+    </head>
+    <body>
+        <h2>Login Page</h2>
+        <form action="../" method="post">
+            <label for="student_num">Student_Number:</label>
+            <input type="text" id="student_num" name="student_num" required>
+            <br>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+            <br>
+            <button type="submit">Login</button>
+        </form>
+        <h2>新規ユーザ登録</h2>
+        <form action="add.html">
+            <input type="submit" value="新規ユーザ登録">
+        </form>
+    </body>
 </html>

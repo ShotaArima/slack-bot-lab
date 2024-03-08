@@ -1,23 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add User Page</title>
-</head>
-<body>
-    <h2>Add User Page</h2>
-    <form action="/add-user" method="post">
-        <label for="ic_id">IC ID:</label>
-        <input type="text" id="ic_id" name="ic_id" required>
-        <br>
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="name" required>
-        <br>
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required>
-        <br>
-        <button type="submit">Add User</button>
-    </form>
-</body>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Add User Page</title>
+    </head>
+    <body>
+        <h2>Add User Page</h2>
+        <form action="/static/slack-bot/routes/slack.js" method="post">
+            <label for="student_num">IC ID:</label>
+            <input type="text" id="student_num" name="student_num" required>
+            <br>
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+            <br>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+            <br>
+            <button type="submit">Add User</button>
+        </form>
+        <form action="login.html">
+            <button type="submit">キャンセル</button>
+        </form>
+    </body>
 </html>
