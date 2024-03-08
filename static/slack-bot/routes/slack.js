@@ -8,10 +8,10 @@ const db = new sqlite3.Database('./../db/slack-app.db');
 
 // ユーザ認証
 router.post('/login', function(req, res, next) {
-    const icId = req.body.ic_id;
+    const icId = req.body.student_num;
     const password = req.body.password;
 
-    const query = "SELECT * FROM user WHERE ic_id = ?";
+    const query = "SELECT * FROM user WHERE student_num = ?";
     db.get(query, [icId], (err, user) => {
         if (!err && user) {
             // データベースからユーザが見つかった場合
@@ -37,7 +37,7 @@ router.post('/login', function(req, res, next) {
 const bcrypt = require('bcrypt');
 
 router.post('/add-user', function(req, res, next) {
-    const icId = req.body.ic_id;
+    const icId = req.body.student_num;
     const name = req.body.name;
     const password = req.body.password;
 
@@ -48,7 +48,7 @@ router.post('/add-user', function(req, res, next) {
             res.send('ユーザ追加失敗');
         } else {
             // ハッシュ化されたパスワードをデータベースに保存
-            const query = "INSERT INTO user (ic_id, name, pass) VALUES (?, ?, ?)";
+            const query = "INSERT INTO user (student_num, name, pass) VALUES (?, ?, ?)";
             db.run(query, [icId, name, hash], function(err) {
                 if (!err) {
                     // ユーザ追加成功
