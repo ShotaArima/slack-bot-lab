@@ -2,17 +2,26 @@ var express = require('express');
 var router = express.Router();
 var sqlite3 = require('sqlite3');
 var bcrypt = require('bcrypt'); 
+const session = require('express-session');
 
 //データベースオブジェクトの取得
 const db = new sqlite3.Database('./../db/slack-app.db');
 
+// セッションの設定
+router.use(session({
+  secret: 'your-secret-key', // セッションの秘密鍵
+  resave: false,
+  saveUninitialized: true
+}));
+
+
 // ユーザ認証
 router.post('/login', function(req, res, next) {
-    const icId = req.body.student_num;
+    const student_num = req.body.student_num;
     const password = req.body.password;
 
     const query = "SELECT * FROM user WHERE student_num = ?";
-    db.get(query, [icId], (err, user) => {
+    db.get(query, [student_num], (err, user) => {
         if (!err && user) {
             // データベースからユーザが見つかった場合
             bcrypt.compare(password, user.pass, function(err, result) {
@@ -33,11 +42,12 @@ router.post('/login', function(req, res, next) {
 
 
 
+
 // ユーザ追加
 const bcrypt = require('bcrypt');
 
 router.post('/add-user', function(req, res, next) {
-    const icId = req.body.student_num;
+    const student_num = req.body.student_num;
     const name = req.body.name;
     const password = req.body.password;
 
@@ -49,7 +59,7 @@ router.post('/add-user', function(req, res, next) {
         } else {
             // ハッシュ化されたパスワードをデータベースに保存
             const query = "INSERT INTO user (student_num, name, pass) VALUES (?, ?, ?)";
-            db.run(query, [icId, name, hash], function(err) {
+            db.run(query, [student_num, name, hash], function(err) {
                 if (!err) {
                     // ユーザ追加成功
                     res.send('ユーザ追加成功');
@@ -60,6 +70,21 @@ router.post('/add-user', function(req, res, next) {
             });
         }
     });
+});
+
+// Mainページのルート
+router.get('/main', function(req, res, next) {
+    // セッションからユーザ情報を取得
+    const user = req.session.user;
+
+    // ログイン状態の確認
+    if (user) {
+        // ログイン済みの場合
+        res.render('main', { user });
+    } else {
+        // 未ログインの場合はログインページにリダイレクト
+        res.redirect('/login');
+    }
 });
 
 module.exports = router;

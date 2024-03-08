@@ -7,8 +7,9 @@
     </head>
     <body>
         <h2>Main Page</h2>
-        <!-- ここに今までの入室記録を表示する -->
-
-        
+        <p>Welcome, <%= user.name %>!</p>
+        <form action="/logout" method="get">
+            <button type="submit">Logout</button>
+        </form>
     </body>
 </html>
