@@ -28,6 +28,10 @@ router.post('/login', function(req, res, next) {
                 if (result) {
                     // パスワード一致 → ログイン成功
                     res.send('ログイン成功');
+                    // ログイン成功時にセッションにユーザ情報を設定
+                    req.session.user = { student_num, name: user.name};
+                    res.redirect('/main');
+
                 } else {
                     // パスワード不一致 → ログイン失敗
                     res.send('ログイン失敗');
@@ -63,6 +67,8 @@ router.post('/add-user', function(req, res, next) {
                 if (!err) {
                     // ユーザ追加成功
                     res.send('ユーザ追加成功');
+                    // ユーザ追加成功時にログインページにリダイレクト
+                    res.redirect('/login');
                 } else {
                     // ユーザ追加失敗
                     res.send('ユーザ追加失敗');
@@ -85,6 +91,18 @@ router.get('/main', function(req, res, next) {
         // 未ログインの場合はログインページにリダイレクト
         res.redirect('/login');
     }
+});
+
+// ログアウトの際にセッションを破棄し、ログインページにリダイレクト
+router.get('/logout', function(req, res, next) {
+    // セッションをクリア
+    req.session.destroy(function(err) {
+        if (err) {
+            console.error(err);
+        }
+        // ログインページにリダイレクト
+        res.redirect('/login');
+    });
 });
 
 module.exports = router;
