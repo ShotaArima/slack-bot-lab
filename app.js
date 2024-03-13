@@ -1,4 +1,6 @@
 const { App, AwsLambdaReceiver } = require('@slack/bolt');
+const sqlite3 = require('sqlite3');
+const bcrypt = require('bcrypt');
 
 /* 
 This sample slack application uses SocketMode
@@ -66,43 +68,150 @@ app.action('button_click', async ({ body, ack, say }) => {
 //   console.log('⚡️ Bolt app is running!');
 // })();
 
+const db = new sqlite3.Database('db/slack.db');
+
 // Lambda 関数のイベントを処理します
 module.exports.handler = async (event, context, callback) => {
-  console.log(event.queryStringParameters);
-  if(event.queryStringParameters.act==="entrance")
+  try 
   {
-    await app.client.chat.postMessage({
-      token: process.env.SLACK_BOT_TOKEN,
-      channel: 'C06FLR2DGUX',
-      text: '入室しました'
-    });
-    return {
-      statusCode: 307,
-      body: JSON.stringify({
-        message: 'メッセージを送信しました',
-      }),
-      headers: {
-        'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/logout.html'
-      }
-    };
-  }
-  else if (event.queryStringParameters.act==="logout")
-  {
-    await app.client.chat.postMessage({
-      token: process.env.SLACK_BOT_TOKEN,
-      channel: 'C06FLR2DGUX',
-      text: '退室しました'
-    });
-    return {
-      statusCode: 307,
-      body: JSON.stringify({
-        message: 'メッセージを送信しました',
-      }),
-      headers:
+    console.log(event.queryStringParameters);
+    if (event.queryStringParameters.act === "login") 
+    {
+      // TODO: Implement user authentication logic
+      const student_id = event.queryStringParameters.student_id;
+      const password = event.queryStringParameters.pass;
+      
+      const row = await new Promise((resolve, reject) => 
       {
-        'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/entrance.html'
-      }
-    };
+        // データベースからユーザーの認証を試みます
+        db.get('SELECT * FROM users WHERE student_id = ?', [student_id], (err, row) => 
+        {
+          if (err) 
+          {
+            reject(err);
+          } else 
+          {
+            resolve(row);
+          }
+        });
+      });
+      
+      if (row) 
+      {
+        // ユーザが存在する場合、パスワードのハッシュを比較して認証します
+        const isPasswordValid = await bcrypt.compare(password, row.pass);
+
+        if (row && isPasswordValid) 
+        {
+          // 認証成功時の処理
+          return callback(null, 
+          {
+            statusCode: 307,
+            body: JSON.stringify({
+              message: 'ログイン成功',
+            }),
+            headers: 
+            {
+              'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/main.html'
+            }
+          });
+        } else 
+        {
+          // パスワードが一致しない場合
+          throw new Error('Invalid password');
+        }
+      } else 
+      {
+        // 認証失敗時の処理
+        return callback(null, {
+          statusCode: 307,
+          body: JSON.stringify({
+            message: 'ログイン失敗',
+          }),
+          headers: {
+            'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/login.html'
+          }
+        });
+      };
+    } else if(event.queryStringParameters.act==="add") 
+    {
+      const student_id = event.queryStringParameters.student_id;
+      const name = event.queryStringParameters.name;
+      const plainPassword = event.queryStringParameters.pass;
+
+      // パスワードをハッシュ化
+      const hashedPassword = await bcrypt.hash(plainPassword, 10);
+
+      // データベースに新しいユーザーを追加
+      db.run('INSERT INTO users (student_id, name, pass) VALUES (?, ?, ?)', [student_id, name, hashedPassword], async (err) => {
+        if (err) {
+          console.error(err);
+          return callback(err);
+        }
+
+        コネクションを閉じる
+        db.close();
+
+        return callback(null, {
+          statusCode: 307,
+          body: JSON.stringify({
+            message: 'ユーザーが追加されました',
+          }),
+          headers: {
+            'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/login.html'
+          }
+        });
+      });
+
+    }else if(event.queryStringParameters.act==="entrance")
+    {
+      await app.client.chat.postMessage({
+        token: process.env.SLACK_BOT_TOKEN,
+        channel: 'C06FLR2DGUX',
+        text: '入室しました'
+      });
+      return {
+        statusCode: 307,
+        body: JSON.stringify({
+          message: 'メッセージを送信しました',
+        }),
+        headers: {
+          'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/logout.html'
+        }
+      };
+    }
+    else if (event.queryStringParameters.act==="logout")
+    {
+      await app.client.chat.postMessage({
+        token: process.env.SLACK_BOT_TOKEN,
+        channel: 'C06FLR2DGUX',
+        text: '退室しました'
+      });
+      return {
+        statusCode: 307,
+        body: JSON.stringify({
+          message: 'メッセージを送信しました',
+        }),
+        headers:
+        {
+          'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/entrance.html'
+        }
+      };
+    } else {
+      throw new Error('Invalid action');
+    }
+  } catch (error) {
+    console.error(error);
+
+    return callback(null, {
+      statusCode: 500,
+      body: JSON.stringify({
+        message: 'Internal Server Error',
+      }),
+    });
+  } finally {
+    // データベース接続を閉じる
+    db.close();
   }
   // await app.client.chat.postMessage({
   //   token: process.env.SLACK_BOT_TOKEN,
@@ -112,4 +221,4 @@ module.exports.handler = async (event, context, callback) => {
   // const handler = await awsLambdaReceiver.start();
   // return handler(event, context, callback);
   
-}
+};
