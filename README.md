@@ -1,6 +1,6 @@
 # slack-bot-lab
 
-SQlite3によるデータベースを参照して、ユーザがログインし、そこからボタン操作による入室を知らせます。
+sqlite3によるデータベースを参照して、ユーザがログインし、そこからボタン操作による入室を知らせます。
 
 - handler.jsは今回のメインのファイルでLambdaで実行する処理を書きます
 - serverless.ymlはServerlessFrameworkを使う上での設定ファイルです
