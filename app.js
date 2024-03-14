@@ -8,6 +8,9 @@ For the companion getting started setup guide,
 see: https://slack.dev/bolt-js/tutorial/getting-started 
 */
 
+//AWS SDKの読み込み
+const AWS = require('aws-sdk');
+
 // カスタムのレシーバーを初期化します
 const awsLambdaReceiver = new AwsLambdaReceiver({
   signingSecret: process.env.SLACK_SIGNING_SECRET,
@@ -30,36 +33,36 @@ const app = new App({
   // appToken: process.env.SLACK_APP_TOKEN
 });
 
-// Listens to incoming messages that contain "hello"
-app.message('hello', async ({ message, say }) => {
-  // say() sends a message to the channel where the event was triggered
-  await say({
-    blocks: [
-      {
-        "type": "section",
-        "text": {
-          "type": "mrkdwn",
-          "text": `Hey there <@${message.user}>!`
-        },
-        "accessory": {
-          "type": "button",
-          "text": {
-            "type": "plain_text",
-            "text": "Click Me"
-          },
-          "action_id": "button_click"
-        }
-      }
-    ],
-    text: `Hey there <@${message.user}>!`
-  });
-});
+// // Listens to incoming messages that contain "hello"
+// app.message('hello', async ({ message, say }) => {
+//   // say() sends a message to the channel where the event was triggered
+//   await say({
+//     blocks: [
+//       {
+//         "type": "section",
+//         "text": {
+//           "type": "mrkdwn",
+//           "text": `Hey there <@${message.user}>!`
+//         },
+//         "accessory": {
+//           "type": "button",
+//           "text": {
+//             "type": "plain_text",
+//             "text": "Click Me"
+//           },
+//           "action_id": "button_click"
+//         }
+//       }
+//     ],
+//     text: `Hey there <@${message.user}>!`
+//   });
+// });
 
-app.action('button_click', async ({ body, ack, say }) => {
-  // Acknowledge the action
-  await ack();
-  await say(`<@${body.user.id}> clicked the button`);
-});
+// app.action('button_click', async ({ body, ack, say }) => {
+//   // Acknowledge the action
+//   await ack();
+//   await say(`<@${body.user.id}> clicked the button`);
+// });
 
 // (async () => {
 //   // Start your app
@@ -68,33 +71,32 @@ app.action('button_click', async ({ body, ack, say }) => {
 //   console.log('⚡️ Bolt app is running!');
 // })();
 
-const db = new sqlite3.Database('db/slack.db');
+
 
 // Lambda 関数のイベントを処理します
 module.exports.handler = async (event, context, callback) => {
-  try 
-  {
+  try {
     console.log(event.queryStringParameters);
-    if (event.queryStringParameters.act === "login") 
-    {
+    if (event.queryStringParameters.act === "login") {
+      // データベースに接続
+      const db = new sqlite3.Database('db/slack.db');
+
       // TODO: Implement user authentication logic
       const student_id = event.queryStringParameters.student_id;
       const password = event.queryStringParameters.pass;
-      
-      const row = await new Promise((resolve, reject) => 
-      {
+      const row = await new Promise((resolve, reject) => {
         // データベースからユーザーの認証を試みます
-        db.get('SELECT * FROM users WHERE student_id = ?', [student_id], (err, row) => 
-        {
-          if (err) 
-          {
+        db.get('SELECT * FROM users WHERE student_id = ?', [student_id], (err, row) => {
+          if (err) {
             reject(err);
-          } else 
-          {
+          } else {
             resolve(row);
           }
         });
       });
+
+      // データベース接続を閉じる
+      db.close();
       
       if (row) 
       {
