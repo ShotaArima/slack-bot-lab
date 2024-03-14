@@ -111,13 +111,19 @@ module.exports.handler = async (event, context, callback) => {
       const student_id = event.queryStringParameters.student_id;
       const name = event.queryStringParameters.name;
       const plainPassword = event.queryStringParameters.pass;
+      console.log('get student_id, name, pass.');
+
 
       // パスワードをハッシュ化
       const hashedPassword = await bcrypt.hash(plainPassword, 10);
+      console.log('Complete hashedpassword.');
+
 
       // データベースに新しいユーザーを追加
       await new Promise((resolve, reject) => {
         db.run('INSERT INTO users (student_id, name, pass) VALUES (?, ?, ?)', [student_id, name, hashedPassword], function(err) {
+          console.log('dbrun.');
+
           if (err) {
             console.error(err);
             return callback(err);
@@ -128,6 +134,8 @@ module.exports.handler = async (event, context, callback) => {
       });
       // コネクションを閉じる
       db.close();
+      console.log('db close');
+
 
       return callback(null, {
         statusCode: 307,
