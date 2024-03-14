@@ -39,6 +39,8 @@ const app = new App({
 
 // Lambda 関数のイベントを処理します
 module.exports.handler = async (event, context, callback) => {
+  let db; // データベースへの接続を保持する変数
+
   // データベースに接続(一時的にコメントアウト)
   // const db = new sqlite3.Database('db/slack.db');
   // S3からSQLite3データベースファイルをダウンロードする処理
@@ -48,162 +50,129 @@ module.exports.handler = async (event, context, callback) => {
   };
 
   try {
+    // ここでダウンロードしたSQLite3データベースファイルを一時的に保存してSQLite3データベースと連携します。
+    db = new sqlite3.Database(':memory:');
     const s3Data = await s3.getObject(params).promise();
     const databaseContent = s3Data.Body.toString('utf-8');
-    // ここでダウンロードしたSQLite3データベースファイルを一時的に保存してSQLite3データベースと連携します。
-    const db = new sqlite3.Database(':memory:');
-    db.exec(databaseContent, (err) => {
-      if (err) {
-        console.error(err);
-        return callback(err);
-      }
-
-      return callback(null, {
-        statusCode: 200,
-        body: JSON.stringify({
-          message: 'SQLiteデータベースファイルのダウンロードが完了しました。',
-        }),
+    await new Promise((resolve, reject) => {
+      db.exec(databaseContent, (err) => {
+        if (err) {
+          console.error(err);
+          return callback(err);
+        } else {
+          resolve();
+        }
       });
+    });
 
-      // データベースへのアクセスや処理を行います
-      // 例えば、認証処理やデータの取得などを行います
-      console.log(event.queryStringParameters);
-      if (event.queryStringParameters.act === "login") {
-        // TODO: Implement user authentication logic
-        const student_id = event.queryStringParameters.student_id;
-        const password = event.queryStringParameters.pass;
-        const row = await new Promise((resolve, reject) => {
-          // データベースからユーザーの認証を試みます
-          db.get('SELECT * FROM users WHERE student_id = ?', [student_id], (err, row) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(row);
+    // データベースへのアクセスや処理を行います
+    // 例えば、認証処理やデータの取得などを行います
+    console.log(event.queryStringParameters);
+    if (event.queryStringParameters.act === "login") {
+      // TODO: Implement user authentication logic
+      const student_id = event.queryStringParameters.student_id;
+      const password = event.queryStringParameters.pass;
+      const row = await new Promise((resolve, reject) => {
+        // データベースからユーザーの認証を試みます
+        db.get('SELECT * FROM users WHERE student_id = ?', [student_id], (err, row) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(row);
+          }
+        });
+      });
+      
+      if (row) {
+        // ユーザが存在する場合、パスワードのハッシュを比較して認証します
+        const isPasswordValid = await bcrypt.compare(password, row.pass);
+
+        if (isPasswordValid) {
+          // 認証成功時の処理
+          return callback(null, {
+            statusCode: 307,
+            body: JSON.stringify({
+              message: 'ログイン成功',
+            }),
+            headers: {
+              'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/main.html'
             }
           });
-        });
-        
-        if (row) {
-          // ユーザが存在する場合、パスワードのハッシュを比較して認証します
-          const isPasswordValid = await bcrypt.compare(password, row.pass);
-
-          if (isPasswordValid) {
-            // 認証成功時の処理
-            return callback(null, {
-              statusCode: 307,
-              body: JSON.stringify({
-                message: 'ログイン成功',
-              }),
-              headers: {
-                'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/main.html'
-              }
-            });
-          } else {
-            // パスワードが一致しない場合
-            throw new Error('Invalid password');
-          }
         } else {
-          // ユーザが存在しない場合
-          throw new Error('User not found');
+          // パスワードが一致しない場合
+          throw new Error('Invalid password');
         }
-      } else if(event.queryStringParameters.act==="add") {
-        // 変数を取得
-        const student_id = event.queryStringParameters.student_id;
-        const name = event.queryStringParameters.name;
-        const plainPassword = event.queryStringParameters.pass;
+      } else {
+        // ユーザが存在しない場合
+        throw new Error('User not found');
+      }
+    } else if(event.queryStringParameters.act==="add") {
+      // 変数を取得
+      const student_id = event.queryStringParameters.student_id;
+      const name = event.queryStringParameters.name;
+      const plainPassword = event.queryStringParameters.pass;
 
-        // パスワードをハッシュ化
-        const hashedPassword = await bcrypt.hash(plainPassword, 10);
+      // パスワードをハッシュ化
+      const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
-        // データベースに新しいユーザーを追加
+      // データベースに新しいユーザーを追加
+      await new Promise((resolve, reject) => {
         db.run('INSERT INTO users (student_id, name, pass) VALUES (?, ?, ?)', [student_id, name, hashedPassword], async (err) => {
           if (err) {
             console.error(err);
             return callback(err);
+          } else {
+            resolve();
           }
-
-          コネクションを閉じる
-          db.close();
-
-          return callback(null, {
-            statusCode: 307,
-            body: JSON.stringify({
-              message: 'ユーザーが追加されました',
-            }),
-            headers: {
-              'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/login.html'
-            }
-          });
         });
-
-      // この部分は、SQLiteデータベースファイルをダウンロードする処理ですが、ここではいけないので、一時的にコメントアウトにしています
-      // } else if(event.queryStringParameters.act === "downloadDatabase") {
-      //   // S3からSQLiteデータベースファイルをダウンロードする処理
-      //   const params = {
-      //     Bucket: 'slack-bot-real-key', // バケット名
-      //     Key: 'db/database.db', // ファイルのパス
-      //   };
-
-      //   const s3Data = await s3.getObject(params).promise();
-      //   const databaseContent = s3Data.Body.toString('utf-8');
-
-      //   // ここでSQLiteデータベースファイルの内容を利用して処理を行う
-      //   console.log(databaseContent);
-
-      //   const uploadParams = {
-      //     Bucket: 'slack-bot-real-key', // バケット名
-      //     Key: 'db/slack.db', // ファイルのパス
-      //     Body: databaseContent,
-      //   };
-
-      //   
-      } else if(event.queryStringParameters.act==="entrance"){
-        await app.client.chat.postMessage({
-          token: process.env.SLACK_BOT_TOKEN,
-          channel: 'C06FLR2DGUX',
-          text: '入室しました'
-        });
-        return {
-          statusCode: 307,
-          body: JSON.stringify({
-            message: 'メッセージを送信しました',
-          }),
-          headers: {
-            'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/logout.html'
-          }
-        };
-      }
-      else if (event.queryStringParameters.act==="logout")
-      {
-        await app.client.chat.postMessage({
-          token: process.env.SLACK_BOT_TOKEN,
-          channel: 'C06FLR2DGUX',
-          text: '退室しました'
-        });
-        return {
-          statusCode: 307,
-          body: JSON.stringify({
-            message: 'メッセージを送信しました',
-          }),
-          headers:
-          {
-            'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/entrance.html'
-          }
-        };
-
-      } else {
-        throw new Error('Invalid action');
-      }
-
-
-      // データベースを閉じる
+      });
+      // コネクションを閉じる
       db.close();
 
-      // 処理が完了したらコールバックを呼び出します
-      callback(null, { statusCode: 200, body: 'Success' });
-    });
+      return callback(null, {
+        statusCode: 307,
+        body: JSON.stringify({
+          message: 'ユーザーが追加されました',
+        }),
+        headers: {
+          'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/login.html'
+        }
+      });
+    } else if(event.queryStringParameters.act==="entrance"){
+      await app.client.chat.postMessage({
+        token: process.env.SLACK_BOT_TOKEN,
+        channel: 'C06FLR2DGUX',
+        text: '入室しました'
+      });
+      return {
+        statusCode: 307,
+        body: JSON.stringify({
+          message: 'メッセージを送信しました',
+        }),
+        headers: {
+          'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/logout.html'
+        }
+      };
+    } else if (event.queryStringParameters.act==="logout"){
+      await app.client.chat.postMessage({
+        token: process.env.SLACK_BOT_TOKEN,
+        channel: 'C06FLR2DGUX',
+        text: '退室しました'
+      });
+      return {
+        statusCode: 307,
+        body: JSON.stringify({
+          message: 'メッセージを送信しました',
+        }),
+        headers:
+        {
+          'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/entrance.html'
+        }
+      };
 
-    
+    } else {
+      throw new Error('Invalid action');
+    }
   } catch (error) {
     console.error('Error downloading database from S3', error);
     console.error(error);
@@ -214,9 +183,10 @@ module.exports.handler = async (event, context, callback) => {
         message: 'Internal Server Error',
       }),
     });
+  } finally {
+    // データベースを閉じる
+    if (db){
+      db.close();
+    }
   }
-  // } finally {
-  //   // データベース接続を閉じる
-  //   db.close();
-  // }
 };
