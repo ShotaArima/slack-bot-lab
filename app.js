@@ -68,7 +68,7 @@ app.action('button_click', async ({ body, ack, say }) => {
 //   console.log('⚡️ Bolt app is running!');
 // })();
 
-const db = new sqlite3.Database('https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/db/slack.db');
+const db = new sqlite3.Database('db/slack.db');
 
 // Lambda 関数のイベントを処理します
 module.exports.handler = async (event, context, callback) => {
