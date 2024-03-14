@@ -43,14 +43,14 @@ module.exports.handler = async (event, context, callback) => {
 
   // データベースに接続(一時的にコメントアウト)
   // const db = new sqlite3.Database('db/slack.db');
-  // S3からSQLite3データベースファイルをダウンロードする処理
+  // S3からsqlite3データベースファイルをダウンロードする処理
   const params = {
     Bucket: 'slack-bot-real-key', // バケット名
     Key: 'db/slack.db', // ファイルのパス
   };
 
   try {
-    // ここでダウンロードしたSQLite3データベースファイルを一時的に保存してSQLite3データベースと連携します。
+    // ここでダウンロードしたsqlite3データベースファイルを一時的に保存してsqlite3データベースと連携します。
     db = new sqlite3.Database(':memory:');
     const s3Data = await s3.getObject(params).promise();
     const databaseContent = s3Data.Body.toString('utf-8');
@@ -117,7 +117,7 @@ module.exports.handler = async (event, context, callback) => {
 
       // データベースに新しいユーザーを追加
       await new Promise((resolve, reject) => {
-        db.run('INSERT INTO users (student_id, name, pass) VALUES (?, ?, ?)', [student_id, name, hashedPassword], async (err) => {
+        db.run('INSERT INTO users (student_id, name, pass) VALUES (?, ?, ?)', [student_id, name, hashedPassword], function(err) {
           if (err) {
             console.error(err);
             return callback(err);
