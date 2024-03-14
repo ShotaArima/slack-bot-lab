@@ -75,12 +75,11 @@ const app = new App({
 
 // Lambda 関数のイベントを処理します
 module.exports.handler = async (event, context, callback) => {
+  // データベースに接続
+  const db = new sqlite3.Database('db/slack.db');
   try {
     console.log(event.queryStringParameters);
     if (event.queryStringParameters.act === "login") {
-      // データベースに接続
-      const db = new sqlite3.Database('db/slack.db');
-
       // TODO: Implement user authentication logic
       const student_id = event.queryStringParameters.student_id;
       const password = event.queryStringParameters.pass;
@@ -94,49 +93,32 @@ module.exports.handler = async (event, context, callback) => {
           }
         });
       });
-
-      // データベース接続を閉じる
-      db.close();
       
-      if (row) 
-      {
+      if (row) {
         // ユーザが存在する場合、パスワードのハッシュを比較して認証します
         const isPasswordValid = await bcrypt.compare(password, row.pass);
 
-        if (row && isPasswordValid) 
-        {
+        if (isPasswordValid) {
           // 認証成功時の処理
-          return callback(null, 
-          {
+          return callback(null, {
             statusCode: 307,
             body: JSON.stringify({
               message: 'ログイン成功',
             }),
-            headers: 
-            {
+            headers: {
               'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/main.html'
             }
           });
-        } else 
-        {
+        } else {
           // パスワードが一致しない場合
           throw new Error('Invalid password');
         }
-      } else 
-      {
-        // 認証失敗時の処理
-        return callback(null, {
-          statusCode: 307,
-          body: JSON.stringify({
-            message: 'ログイン失敗',
-          }),
-          headers: {
-            'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/login.html'
-          }
-        });
-      };
-    } else if(event.queryStringParameters.act==="add") 
-    {
+      } else {
+        // ユーザが存在しない場合
+        throw new Error('User not found');
+      }
+    } else if(event.queryStringParameters.act==="add") {
+      // 変数を取得
       const student_id = event.queryStringParameters.student_id;
       const name = event.queryStringParameters.name;
       const plainPassword = event.queryStringParameters.pass;
