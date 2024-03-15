@@ -9,7 +9,7 @@ For the companion getting started setup guide,
 see: https://slack.dev/bolt-js/tutorial/getting-started 
 */
 // AWS Lambdaのリージョンを設定
-AWS.config.update({ region: 'us-east-1' });
+AWS.config.update({ region: 'ap-northeast-1' });
 
 // S3 クライアントを作成
 const s3 = new AWS.S3();
@@ -49,7 +49,7 @@ module.exports.handler = async (event, context, callback) => {
     Key: 'db/slack.db', // ファイルのパス
   };
 
-  try {
+  // try {
     // ここでダウンロードしたsqlite3データベースファイルを一時的に保存してsqlite3データベースと連携します。
     db = new sqlite3.Database(':memory:');
     const s3Data = await s3.getObject(params).promise();
@@ -181,20 +181,20 @@ module.exports.handler = async (event, context, callback) => {
     } else {
       throw new Error('Invalid action');
     }
-  } catch (error) {
-    console.error('Error downloading database from S3', error);
-    console.error(error);
+  // } catch (error) {
+  //   console.error('Error downloading database from S3', error);
+  //   console.error(error);
 
-    return callback(null, {
-      statusCode: 500,
-      body: JSON.stringify({
-        message: 'Internal Server Error',
-      }),
-    });
-  } finally {
-    // データベースを閉じる
-    if (db){
-      db.close();
-    }
-  }
+  //   return callback(null, {
+  //     statusCode: 500,
+  //     body: JSON.stringify({
+  //       message: 'Internal Server Error',
+  //     }),
+  //   });
+  // } finally {
+  //   // データベースを閉じる
+  //   if (db){
+  //     db.close();
+  //   }
+  // }
 };
