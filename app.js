@@ -9,7 +9,7 @@ For the companion getting started setup guide,
 see: https://slack.dev/bolt-js/tutorial/getting-started 
 */
 // AWS Lambdaのリージョンを設定
-AWS.config.update({ region: 'ap-northeast-1' });
+AWS.config.update({ region: 'us-east-1' });
 
 // S3 クライアントを作成
 const s3 = new AWS.S3();
