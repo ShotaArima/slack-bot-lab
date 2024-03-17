@@ -128,7 +128,7 @@ module.exports.handler = async (event, context, callback) => {
                     message: 'ログイン成功',
                   }),
                   headers: {
-                    'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/main.html'
+                    'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/main.html'
                   }
                 });
               } else {
