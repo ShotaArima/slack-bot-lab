@@ -158,7 +158,8 @@ module.exports.handler = async (event, context, callback) => {
             console.log('Start hashing password.');
             try {
               // パスワードをハッシュ化
-              const hashedPassword = await bcrypt.hash(plainPassword, 10);
+              // const hashedPassword = await bcrypt.hash(plainPassword, 10);
+              const hashedPassword = plainPassword;
               console.log('Complete hashedpassword.');
             } catch (error) {
               console.error('Error hashing password:', error);
