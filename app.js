@@ -201,7 +201,7 @@ module.exports.handler = async (event, context, callback) => {
               const uploadParams = {
                 Bucket: 'slack-bot-real-key',
                 Key: 'db/slack.db',
-                Body: fs.readFileSync(dounload_path),
+                Body: fs.readFileSync(download_path),
               };
               const result = await s3.upload(uploadParams).promise();
               console.log('Uploaded', result.Location);
