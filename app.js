@@ -155,7 +155,7 @@ module.exports.handler = async (event, context, callback) => {
             // データベースに新しいユーザーを追加
             await conn.run('INSERT INTO users (student_id, name, pass) VALUES (?, ?, ?)', [student_id, name, hashedPassword] );
             console.log('dbrun.');
-            console.log('Select *', await conn.all('SELECT * FROM users'));
+            console.log('Select *', await conn.all('SELECT count(*) FROM users'));
             
             // コネクションを閉じる
             await conn.close();
