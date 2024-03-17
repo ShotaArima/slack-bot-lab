@@ -174,6 +174,7 @@ module.exports.handler = async (event, context, callback) => {
                 }
               });
             });
+            console.log('Select *', db.all('SELECT * FROM users'));
             // コネクションを閉じる
             db.close();
             console.log('db close');
