@@ -88,17 +88,17 @@ module.exports.handler = async (event, context, callback) => {
         console.log('Before serialize');
           // await conn.get("SELECT mycolumn FROM message LIMIT 1");
 
-          await new Promise((resolve, reject) => {
-            conn.get("SELECT mycolumn FROM message LIMIT 1", (err, row) => {
-              if (err) {
-                console.error('Error querying database:', err);
-                reject(err);
-              } else {
-                console.log(row);
-                resolve(row);
-              }
-            });
-          });
+          // await new Promise((resolve, reject) => {
+          //   conn.get("SELECT mycolumn FROM message LIMIT 1", (err, row) => {
+          //     if (err) {
+          //       console.error('Error querying database:', err);
+          //       reject(err);
+          //     } else {
+          //       console.log(row);
+          //       resolve(row);
+          //     }
+          //   });
+          // });
           
 
           // データベースへのアクセスや処理を行います
