@@ -54,10 +54,13 @@ module.exports.handler = async (event, context, callback) => {
   // try {
     // ここでダウンロードしたsqlite3データベースファイルを一時的に保存してsqlite3データベースと連携します。
     db = new sqlite3.Database(':memory:');
+    console.log("after db");
     const s3Data = await s3.getObject(params).promise();
     const databaseContent = s3Data.Body.toString('utf-8');
     await new Promise((resolve, reject) => {
+      console.log("before promise");
       db.exec(databaseContent, (err) => {
+        console.log("in promise");
         if (err) {
           console.error(err);
           return callback(err);
@@ -66,6 +69,7 @@ module.exports.handler = async (event, context, callback) => {
         }
       });
     });
+    console.log("after promise");
 
     // データベースへのアクセスや処理を行います
     // 例えば、認証処理やデータの取得などを行います
