@@ -49,6 +49,7 @@ module.exports.handler = async (event, context, callback) => {
     Bucket: 'slack-bot-real-key', // バケット名
     Key: 'db/slack.db', // ファイルのパス
   };
+  console.log("test");
 
   // try {
     // ここでダウンロードしたsqlite3データベースファイルを一時的に保存してsqlite3データベースと連携します。
