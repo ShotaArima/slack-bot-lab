@@ -195,8 +195,9 @@ module.exports.handler = async (event, context, callback) => {
                 return callback(null, {
                   statusCode: 302,
                   headers: {
-                    'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/add.html'
-                  },                  body: JSON.stringify({
+                    // 'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/add.html'
+                  },                  
+                  body: JSON.stringify({
                     message: 'ユーザーはすでに存在します',
                   }),
                 });
