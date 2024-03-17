@@ -164,6 +164,23 @@ module.exports.handler = async (event, context, callback) => {
             await db.close();
             console.log('db close');
 
+            // 元のデータベースファイルと一時的なデータベースファイルを比較して変更が必要かどうかを確認
+            const originalDatabaseContent = fs.readFileSync(download_path2, 'utf-8');
+            const newDatabaseContent = fs.readFileSync(download_path, 'utf-8');
+            if (originalDatabaseContent !== newDatabaseContent) {
+              // 変更がある場合のみ元のデータベースファイルに変更を適用
+              fs.copyFileSync(download_path, 'db/slack.db');
+              console.log('変更が元のデータベースに反映されました');
+            } else {
+              console.log('変更は不要です');
+            }
+            conn.close((err) => {
+              if (err) {
+                console.error('Error closing database connection:', err);
+                return;
+              }
+              console.log('Connection closed');
+            });
 
             return callback(null, {
               statusCode: 307,
