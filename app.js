@@ -209,7 +209,7 @@ module.exports.handler = async (event, context, callback) => {
             });
             
             // コネクションを閉じる
-            db.close();
+            await db.close();
             console.log('db close');
 
 
