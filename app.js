@@ -153,20 +153,42 @@ module.exports.handler = async (event, context, callback) => {
               console.log('Complete hashedpassword.');
 
             // データベースに新しいユーザーを追加
-            await conn.run('INSERT INTO users (student_id, name, pass) VALUES (?, ?, ?)', [student_id, name, hashedPassword] );
-            console.log('dbrun.');
-            // console.log('Select count(*)', await conn.get('SELECT count(*) FROM users'));
-            conn.all('SELECT count(*) AS count FROM users', function(err, rows) {
-              if (err) {
-                  throw err;
-              }
-              rows.forEach(function (row) {
-                console.log('Select count(*)', row.count);
+            await new Promise((resolve, reject) => {
+              conn.run('INSERT INTO users (student_id, name, pass) VALUES (?, ?, ?)', [student_id, name, hashedPassword], function(err) {
+                  if (err) {
+                      reject(err);
+                  } else {
+                      resolve();
+                  }
               });
             });
+            console.log('dbrun.');
+            // console.log('Select count(*)', await conn.get('SELECT count(*) FROM users'));
+            const rows = await new Promise((resolve, reject) => {
+              conn.all('SELECT count(*) AS count FROM users', function(err, rows) {
+                if (err) {
+                  reject(err);
+                } else {
+                  resolve(rows);
+                }
+                
+              })
+            });
+            rows.forEach(function (row) {
+              console.log('Select count(*)', row.count);
+            });
+
             
             // コネクションを閉じる
-            await conn.close();
+            await new Promise((resolve, reject) => {
+              conn.close(err => {
+                  if (err) {
+                      reject(err);
+                  } else {
+                      resolve();
+                  }
+              });
+            });
             console.log('db close');
 
             // 元のデータベースファイルと一時的なデータベースファイルを比較して変更が必要かどうかを確認
