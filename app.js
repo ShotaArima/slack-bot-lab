@@ -126,7 +126,7 @@ module.exports.handler = async (event, context, callback) => {
                 if (isPasswordValid) {
                   // 認証成功時の処理
                   return callback(null, {
-                    statusCode: 200,
+                    statusCode: 307,
                     headers: {
                       'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/main.html'
                     },
