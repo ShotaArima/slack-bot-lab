@@ -57,7 +57,6 @@ const app = new App({
 // Lambda 関数のイベントを処理します
 module.exports.handler = async (event, context, callback) => {
   console.log("start handler.");
-  let db; // データベースへの接続を保持する変数
 
   // データベースに接続(一時的にコメントアウト)
   // const db = new sqlite3.Database('db/slack.db');
@@ -83,8 +82,6 @@ module.exports.handler = async (event, context, callback) => {
         const conn = new sqlite3.Database(download_path, sqlite3.OPEN_READWRITE);
         console.log('conn', conn);
         console.log('Connected to SQLite database');
-
-        db = conn;
         console.log('Before serialize');
           // await conn.get("SELECT mycolumn FROM message LIMIT 1");
 
@@ -110,7 +107,7 @@ module.exports.handler = async (event, context, callback) => {
             const password = event.queryStringParameters.pass;
             const row = await new Promise((resolve, reject) => {
               // データベースからユーザーの認証を試みます
-              db.get('SELECT * FROM users WHERE student_id = ?', [student_id], (err, row) => {
+              conn.get('SELECT * FROM users WHERE student_id = ?', [student_id], (err, row) => {
                 if (err) {
                   reject(err);
                 } else {
@@ -156,12 +153,12 @@ module.exports.handler = async (event, context, callback) => {
               console.log('Complete hashedpassword.');
 
             // データベースに新しいユーザーを追加
-            await db.run('INSERT INTO users (student_id, name, pass) VALUES (?, ?, ?)', [student_id, name, hashedPassword] );
+            await conn.run('INSERT INTO users (student_id, name, pass) VALUES (?, ?, ?)', [student_id, name, hashedPassword] );
             console.log('dbrun.');
-            console.log('Select *', await db.all('SELECT * FROM users'));
+            console.log('Select *', await conn.all('SELECT * FROM users'));
             
             // コネクションを閉じる
-            await db.close();
+            await conn.close();
             console.log('db close');
 
             // 元のデータベースファイルと一時的なデータベースファイルを比較して変更が必要かどうかを確認
@@ -174,13 +171,6 @@ module.exports.handler = async (event, context, callback) => {
             } else {
               console.log('変更は不要です');
             }
-            conn.close((err) => {
-              if (err) {
-                console.error('Error closing database connection:', err);
-                return;
-              }
-              console.log('Connection closed');
-            });
 
             return callback(null, {
               statusCode: 307,
