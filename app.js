@@ -51,8 +51,6 @@ module.exports.handler = async (event, context, callback) => {
     Key: 'db/slack.db', // ファイルのパス
   };
   console.log("get params");
-
-  // try {
     // ここでダウンロードしたsqlite3データベースファイルを一時的に保存してsqlite3データベースと連携します。
     // db = new sqlite3.Database(':memory:');
     // console.log("after db");
@@ -73,17 +71,22 @@ module.exports.handler = async (event, context, callback) => {
     // });
     // console.log("after promise");
 
-    const download_path = "/tmp/slack.db"
-    const data = await s3.getObject(params).promise();
-    fs.writeFileSync(download_path, data.Body);
-    console.log("after writeFileSync");
-
-    s3.getObject(params, (err, data) => {
-      if (err) {
-        console.error('Error downloading file from S3:', err);
-        return;
-      }
+    try {
+      const download_path = "/tmp/slack.db"
+      const data = await s3.getObject(params).promise();
       fs.writeFileSync(download_path, data.Body);
+      console.log("after writeFileSync");
+
+      const data2 = await s3.getObject(params).promise();
+      fs.writeFileSync(download_path, data2.Body);
+      console.log("after writeFileSync2");
+    // s3.getObject(params, (err, data) => {
+    //   if (err) {
+    //     console.error('Error downloading file from S3:', err);
+    //     return;
+    //   }
+    //   fs.writeFileSync(download_path, data.Body);
+    
 
       // let db;
     
@@ -242,7 +245,17 @@ module.exports.handler = async (event, context, callback) => {
           console.log('Connection closed');
         });
       });
-    });
+    } catch (error) {
+      console.error('Error downloading database from S3', error);
+      console.error(error);
+
+      return callback(null, {
+        statusCode: 500,
+        body: JSON.stringify({
+          message: 'Internal Server Error',
+        }),
+      });
+    }
 
     // } else {
     //   throw new Error('Invalid action');
