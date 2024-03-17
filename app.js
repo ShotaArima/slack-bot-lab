@@ -68,24 +68,6 @@ module.exports.handler = async (event, context, callback) => {
   };
   console.log("get params");
     // ここでダウンロードしたsqlite3データベースファイルを一時的に保存してsqlite3データベースと連携します。
-    // db = new sqlite3.Database(':memory:');
-    // console.log("after db");
-    // const s3Data = await s3.getObject(params).promise();
-    // const databaseContent = s3Data.Body.toString('utf-8');
-    // await new Promise((resolve, reject) => {
-    //   console.log("before promise");
-    //   console.log("databaseContent", databaseContent);
-    //   db.exec(databaseContent, (err) => {
-    //     console.log("in promise");
-    //     if (err) {
-    //       console.error(err);
-    //       return reject(err);
-    //     } else {
-    //       resolve();
-    //     }
-    //   });
-    // });
-    // console.log("after promise");
 
     try {
       const download_path = "/tmp/slack.db"
@@ -95,19 +77,6 @@ module.exports.handler = async (event, context, callback) => {
 
       const download_path2 = "/tmp/slack2.db"
       await copyFile(download_path, download_path2);
-
-      // const data2 = await s3.getObject(params).promise();
-      // fs.writeFileSync(download_path, data2.Body);
-      // console.log("after writeFileSync2");
-    // s3.getObject(params, (err, data) => {
-    //   if (err) {
-    //     console.error('Error downloading file from S3:', err);
-    //     return;
-    //   }
-    //   fs.writeFileSync(download_path, data.Body);
-    
-
-      // let db;
     
       console.log('Before Connecting to SQLite database');
       // tmpデータベースに接続
@@ -185,16 +154,6 @@ module.exports.handler = async (event, context, callback) => {
               // const hashedPassword = await bcrypt.hash(plainPassword, 10);
               const hashedPassword = plainPassword;
               console.log('Complete hashedpassword.');
-            // try{ 
-            // } catch (error) {
-            //   console.error('Error hashing password:', error);
-            //   return callback(null, {
-            //     statusCode: 500,
-            //     body: JSON.stringify({
-            //       message: 'Internal Server Error',
-            //     }),
-            //   });
-            // }
 
             // データベースに新しいユーザーを追加
             await db.run('INSERT INTO users (student_id, name, pass) VALUES (?, ?, ?)', [student_id, name, hashedPassword] );
@@ -280,24 +239,4 @@ module.exports.handler = async (event, context, callback) => {
         }),
       });
     }
-
-    // } else {
-    //   throw new Error('Invalid action');
-    // }
-  // } catch (error) {
-  //   console.error('Error downloading database from S3', error);
-  //   console.error(error);
-
-  //   return callback(null, {
-  //     statusCode: 500,
-  //     body: JSON.stringify({
-  //       message: 'Internal Server Error',
-  //     }),
-  //   });
-  // } finally {
-  //   // データベースを閉じる
-  //   if (db){
-  //     db.close();
-  //   }
-  // }
 };
