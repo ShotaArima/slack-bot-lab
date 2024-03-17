@@ -155,6 +155,7 @@ module.exports.handler = async (event, context, callback) => {
             const plainPassword = event.queryStringParameters.pass;
             console.log('get student_id, name, pass.');
 
+            console.log('Start hashing password.');
             try {
               // パスワードをハッシュ化
               const hashedPassword = await bcrypt.hash(plainPassword, 10);
