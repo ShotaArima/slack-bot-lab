@@ -39,6 +39,7 @@ const app = new App({
 
 // Lambda 関数のイベントを処理します
 module.exports.handler = async (event, context, callback) => {
+  console.log("start handler.");
   let db; // データベースへの接続を保持する変数
 
   // データベースに接続(一時的にコメントアウト)
