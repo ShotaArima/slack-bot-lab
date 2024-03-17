@@ -156,17 +156,17 @@ module.exports.handler = async (event, context, callback) => {
             console.log('get student_id, name, pass.');
 
             console.log('Start hashing password.');
-            try {
               // パスワードをハッシュ化
               // const hashedPassword = await bcrypt.hash(plainPassword, 10);
               const hashedPassword = plainPassword;
               console.log('Complete hashedpassword.');
+            try{ 
             } catch (error) {
               console.error('Error hashing password:', error);
               return callback(null, {
                 statusCode: 500,
                 body: JSON.stringify({
-                  message: 'hashing password error.',
+                  message: 'Internal Server Error',
                 }),
               });
             }
