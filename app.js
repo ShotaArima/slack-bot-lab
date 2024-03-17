@@ -59,11 +59,12 @@ module.exports.handler = async (event, context, callback) => {
     const databaseContent = s3Data.Body.toString('utf-8');
     await new Promise((resolve, reject) => {
       console.log("before promise");
+      console.log("databaseContent", databaseContent);
       db.exec(databaseContent, (err) => {
         console.log("in promise");
         if (err) {
           console.error(err);
-          return callback(err);
+          return reject(err);
         } else {
           resolve();
         }
