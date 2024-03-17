@@ -86,7 +86,7 @@ module.exports.handler = async (event, context, callback) => {
 
       // let db;
     
-      const conn = new sqlite3.Database(download_path, sqlite3.OPEN_READWRITE, (err) => {
+      const conn = new sqlite3.Database(download_path, sqlite3.OPEN_READWRITE, async(err) => {
         if (err) {
           console.error('Error connecting to SQLite database:', err);
           return;
@@ -94,7 +94,7 @@ module.exports.handler = async (event, context, callback) => {
         console.log('Connected to SQLite database');
 
         db = conn;
-          conn.serialize(() => {
+        conn.serialize(async () => {
           conn.get("SELECT mycolumn FROM message LIMIT 1", async (err, row) => {
             if (err) {
               console.error('Error querying database:', err);
@@ -241,133 +241,6 @@ module.exports.handler = async (event, context, callback) => {
         });
       });
     });
-
-    // bucket.download_file("my_database.db", "/tmp/my_database.db")
-    // conn = sqlite3.connect("/tmp/my_database.db")
-    // cursor = conn.cursor()
-    // print(cursor.execute("select mycolumn from message limit 1").fetchone())
-
-
-
-
-
-
-
-
-
-
-    // // データベースへのアクセスや処理を行います
-    // // 例えば、認証処理やデータの取得などを行います
-    // console.log(event.queryStringParameters);
-    // if (event.queryStringParameters.act === "login") {
-    //   // TODO: Implement user authentication logic
-    //   const student_id = event.queryStringParameters.student_id;
-    //   const password = event.queryStringParameters.pass;
-    //   const row = await new Promise((resolve, reject) => {
-    //     // データベースからユーザーの認証を試みます
-    //     db.get('SELECT * FROM users WHERE student_id = ?', [student_id], (err, row) => {
-    //       if (err) {
-    //         reject(err);
-    //       } else {
-    //         resolve(row);
-    //       }
-    //     });
-    //   });
-      
-    //   if (row) {
-    //     // ユーザが存在する場合、パスワードのハッシュを比較して認証します
-    //     const isPasswordValid = await bcrypt.compare(password, row.pass);
-
-    //     if (isPasswordValid) {
-    //       // 認証成功時の処理
-    //       return callback(null, {
-    //         statusCode: 307,
-    //         body: JSON.stringify({
-    //           message: 'ログイン成功',
-    //         }),
-    //         headers: {
-    //           'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/main.html'
-    //         }
-    //       });
-    //     } else {
-    //       // パスワードが一致しない場合
-    //       throw new Error('Invalid password');
-    //     }
-    //   } else {
-    //     // ユーザが存在しない場合
-    //     throw new Error('User not found');
-    //   }
-    // } else if(event.queryStringParameters.act==="add") {
-    //   // 変数を取得
-    //   const student_id = event.queryStringParameters.student_id;
-    //   const name = event.queryStringParameters.name;
-    //   const plainPassword = event.queryStringParameters.pass;
-    //   console.log('get student_id, name, pass.');
-
-
-    //   // パスワードをハッシュ化
-    //   const hashedPassword = await bcrypt.hash(plainPassword, 10);
-    //   console.log('Complete hashedpassword.');
-
-
-    //   // データベースに新しいユーザーを追加
-    //   await new Promise((resolve, reject) => {
-    //     db.run('INSERT INTO users (student_id, name, pass) VALUES (?, ?, ?)', [student_id, name, hashedPassword], function(err) {
-    //       console.log('dbrun.');
-
-    //       if (err) {
-    //         console.error(err);
-    //         return callback(err);
-    //       } else {
-    //         resolve();
-    //       }
-    //     });
-    //   });
-    //   // コネクションを閉じる
-    //   db.close();
-    //   console.log('db close');
-
-
-    //   return callback(null, {
-    //     statusCode: 307,
-    //     body: JSON.stringify({
-    //       message: 'ユーザーが追加されました',
-    //     }),
-    //     headers: {
-    //       'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/login.html'
-    //     }
-    //   });
-    // } else if(event.queryStringParameters.act==="entrance"){
-    //   await app.client.chat.postMessage({
-    //     token: process.env.SLACK_BOT_TOKEN,
-    //     channel: 'C06FLR2DGUX',
-    //     text: '入室しました'
-    //   });
-    //   return {
-    //     statusCode: 307,
-    //     body: JSON.stringify({
-    //       message: 'メッセージを送信しました',
-    //     }),
-    //     headers: {
-    //       'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/logout.html'
-    //     }
-    //   };
-    // } else if (event.queryStringParameters.act==="logout"){
-    //   await app.client.chat.postMessage({
-    //     token: process.env.SLACK_BOT_TOKEN,
-    //     channel: 'C06FLR2DGUX',
-    //     text: '退室しました'
-    //   });
-    //   return {
-    //     statusCode: 307,
-    //     body: JSON.stringify({
-    //       message: 'メッセージを送信しました',
-    //     }),
-    //     headers:
-    //     {
-    //       'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/entrance.html'
-    //     }
-    //   };
 
     // } else {
     //   throw new Error('Invalid action');
