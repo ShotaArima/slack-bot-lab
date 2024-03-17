@@ -77,9 +77,9 @@ module.exports.handler = async (event, context, callback) => {
       fs.writeFileSync(download_path, data.Body);
       console.log("after writeFileSync");
 
-      const data2 = await s3.getObject(params).promise();
-      fs.writeFileSync(download_path, data2.Body);
-      console.log("after writeFileSync2");
+      // const data2 = await s3.getObject(params).promise();
+      // fs.writeFileSync(download_path, data2.Body);
+      // console.log("after writeFileSync2");
     // s3.getObject(params, (err, data) => {
     //   if (err) {
     //     console.error('Error downloading file from S3:', err);
