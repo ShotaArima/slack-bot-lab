@@ -76,6 +76,7 @@ module.exports.handler = async (event, context, callback) => {
     const download_path = "/tmp/slack.db"
     const data = await s3.getObject(params).promise();
     fs.writeFileSync(download_path, data.Body);
+    console.log("after writeFileSync");
 
     s3.getObject(params, (err, data) => {
       if (err) {
@@ -86,6 +87,7 @@ module.exports.handler = async (event, context, callback) => {
 
       // let db;
     
+      console.log('Before Connecting to SQLite database');
       const conn = new sqlite3.Database(download_path, sqlite3.OPEN_READWRITE, async(err) => {
         if (err) {
           console.error('Error connecting to SQLite database:', err);
