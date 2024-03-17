@@ -156,9 +156,14 @@ module.exports.handler = async (event, context, callback) => {
             await conn.run('INSERT INTO users (student_id, name, pass) VALUES (?, ?, ?)', [student_id, name, hashedPassword] );
             console.log('dbrun.');
             // console.log('Select count(*)', await conn.get('SELECT count(*) FROM users'));
-            const countResult = await conn.get('SELECT count(*) AS count FROM users');
-            // console.log('Select count(*)', countResult.count);
-            console.log('Select count(*)', countResult.count);
+            conn.all('SELECT count(*) AS count FROM users', function(err, rows) {
+              if (err) {
+                  throw err;
+              }
+              rows.forEach(function (row) {
+                console.log('Select count(*)', row.count);
+              });
+            });
             
             // コネクションを閉じる
             await conn.close();
