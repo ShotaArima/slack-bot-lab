@@ -99,6 +99,7 @@ module.exports.handler = async (event, context, callback) => {
         console.log('Connected to SQLite database');
 
         db = conn;
+        console.log('Before serialize');
         conn.serialize(async () => {
           conn.get("SELECT mycolumn FROM message LIMIT 1", async (err, row) => {
             if (err) {
