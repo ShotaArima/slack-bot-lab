@@ -196,7 +196,16 @@ module.exports.handler = async (event, context, callback) => {
             const newDatabaseContent = fs.readFileSync(download_path, 'utf-8');
             if (originalDatabaseContent !== newDatabaseContent) {
               // 変更がある場合のみ元のデータベースファイルに変更を適用
-              fs.copyFileSync(download_path, 'db/slack.db');
+              // fs.copyFileSync(download_path, 'db/slack.db'); 
+              //upload SQLite file to S3
+              const uploadParams = {
+                Bucket: 'slack-bot-real-key',
+                Key: 'db/slack.db',
+                Body: fs.readFileSync(dounload_path),
+              };
+              const result = await s3.upload(uploadParams).promise();
+              console.log('Uploaded', result.Location);
+              
               console.log('変更が元のデータベースに反映されました');
             } else {
               console.log('変更は不要です');
