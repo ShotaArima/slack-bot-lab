@@ -13,7 +13,7 @@ if (statusCode === 200)
 } else if (statusCode === 302) 
 {
     alert('ユーザーはすでに存在します');
-    window.location.href = 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/add.html';
+    // window.location.href = 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/add.html';
 } else if (statusCode === 500) 
 {
     alert('ユーザーの追加中にエラーが発生しました');
