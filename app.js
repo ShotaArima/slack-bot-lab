@@ -2,6 +2,7 @@ const { App, AwsLambdaReceiver } = require('@slack/bolt');
 const sqlite3 = require('sqlite3');
 const bcrypt = require('bcrypt');
 const AWS = require('aws-sdk');//AWS SDKの読み込み
+const fs = require('fs');
 
 /* 
 This sample slack application uses SocketMode
@@ -53,24 +54,71 @@ module.exports.handler = async (event, context, callback) => {
 
   // try {
     // ここでダウンロードしたsqlite3データベースファイルを一時的に保存してsqlite3データベースと連携します。
-    db = new sqlite3.Database(':memory:');
-    console.log("after db");
-    const s3Data = await s3.getObject(params).promise();
-    const databaseContent = s3Data.Body.toString('utf-8');
-    await new Promise((resolve, reject) => {
-      console.log("before promise");
-      console.log("databaseContent", databaseContent);
-      db.exec(databaseContent, (err) => {
-        console.log("in promise");
+    // db = new sqlite3.Database(':memory:');
+    // console.log("after db");
+    // const s3Data = await s3.getObject(params).promise();
+    // const databaseContent = s3Data.Body.toString('utf-8');
+    // await new Promise((resolve, reject) => {
+    //   console.log("before promise");
+    //   console.log("databaseContent", databaseContent);
+    //   db.exec(databaseContent, (err) => {
+    //     console.log("in promise");
+    //     if (err) {
+    //       console.error(err);
+    //       return reject(err);
+    //     } else {
+    //       resolve();
+    //     }
+    //   });
+    // });
+    // console.log("after promise");
+
+    const download_path = "/tmp/slack.db"
+    s3.getObject(params, (err, data) => {
+      if (err) {
+        console.error('Error downloading file from S3:', err);
+        return;
+      }
+      fs.writeFileSync(download_path, data.Body);
+    
+      const conn = new sqlite3.Database(download_path, sqlite3.OPEN_READONLY, (err) => {
         if (err) {
-          console.error(err);
-          return reject(err);
-        } else {
-          resolve();
+          console.error('Error connecting to SQLite database:', err);
+          return;
         }
+        console.log('Connected to SQLite database');
+        
+        conn.get("SELECT mycolumn FROM message LIMIT 1", (err, row) => {
+          if (err) {
+            console.error('Error querying database:', err);
+            return;
+          }
+          console.log(row);
+        });
+    
+        conn.close((err) => {
+          if (err) {
+            console.error('Error closing database connection:', err);
+            return;
+          }
+          console.log('Connection closed');
+        });
       });
     });
-    console.log("after promise");
+
+    // bucket.download_file("my_database.db", "/tmp/my_database.db")
+    // conn = sqlite3.connect("/tmp/my_database.db")
+    // cursor = conn.cursor()
+    // print(cursor.execute("select mycolumn from message limit 1").fetchone())
+
+
+
+
+
+
+
+
+
 
     // データベースへのアクセスや処理を行います
     // 例えば、認証処理やデータの取得などを行います
