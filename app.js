@@ -4,6 +4,22 @@ const bcrypt = require('bcrypt');
 const AWS = require('aws-sdk');//AWS SDKの読み込み
 const fs = require('fs');
 
+async function copyFile(sourcePath, destinationPath) {
+  return new Promise((resolve, reject) => {
+      const readStream = fs.createReadStream(sourcePath);
+      const writeStream = fs.createWriteStream(destinationPath);
+
+      readStream.on('error', reject);
+      writeStream.on('error', reject);
+
+      writeStream.on('finish', () => {
+          resolve();
+      });
+
+      readStream.pipe(writeStream);
+  });
+}
+
 /* 
 This sample slack application uses SocketMode
 For the companion getting started setup guide, 
@@ -76,6 +92,9 @@ module.exports.handler = async (event, context, callback) => {
       const data = await s3.getObject(params).promise();
       fs.writeFileSync(download_path, data.Body);
       console.log("after writeFileSync");
+
+      const download_path2 = "/tmp/slack2.db"
+      await copyFile(download_path, download_path2);
 
       // const data2 = await s3.getObject(params).promise();
       // fs.writeFileSync(download_path, data2.Body);
@@ -242,7 +261,7 @@ module.exports.handler = async (event, context, callback) => {
 
 
         // 元のデータベースファイルと一時的なデータベースファイルを比較して変更が必要かどうかを確認
-        const originalDatabaseContent = fs.readFileSync('db/slack.db', 'utf-8');
+        const originalDatabaseContent = fs.readFileSync(download_path2, 'utf-8');
         const newDatabaseContent = fs.readFileSync(download_path, 'utf-8');
         if (originalDatabaseContent !== newDatabaseContent) {
           // 変更がある場合のみ元のデータベースファイルに変更を適用
