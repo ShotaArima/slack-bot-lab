@@ -184,6 +184,9 @@ module.exports.handler = async (event, context, callback) => {
                 body: JSON.stringify({
                   message: 'ユーザーが追加されました',
                 }),
+                headers: {
+                  'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/login.html'
+                }
               });
             } catch (error) {
               console.error('Error:', error);
@@ -193,8 +196,10 @@ module.exports.handler = async (event, context, callback) => {
                   statusCode: 409, // Conflict
                   body: JSON.stringify({
                     message: 'ユーザーはすでに存在します',
-                    
                   }),
+                  headers: {
+                    'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/add.html'
+                  }
                 });
               } else {
                 return callback(null, {
@@ -202,6 +207,9 @@ module.exports.handler = async (event, context, callback) => {
                   body: JSON.stringify({
                     message: 'ユーザーの追加中にエラーが発生しました',
                   }),
+                  headers: {
+                    'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/add.html'
+                  }
                 });
               }
             }
