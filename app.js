@@ -194,19 +194,9 @@ module.exports.handler = async (event, context, callback) => {
 
 
             // データベースに新しいユーザーを追加
-            await new Promise((resolve, reject) => {
-              db.run('INSERT INTO users (student_id, name, pass) VALUES (?, ?, ?)', [student_id, name, hashedPassword], function(err) {
-                console.log('dbrun.');
-
-                if (err) {
-                  console.error(err);
-                  return callback(err);
-                } else {
-                  resolve();
-                }
-              });
-              console.log('Select *', db.all('SELECT * FROM users'));
-            });
+            await db.run('INSERT INTO users (student_id, name, pass) VALUES (?, ?, ?)', [student_id, name, hashedPassword] );
+            console.log('dbrun.');
+            console.log('Select *', await db.all('SELECT * FROM users'));
             
             // コネクションを閉じる
             await db.close();
