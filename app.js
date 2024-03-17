@@ -127,12 +127,12 @@ module.exports.handler = async (event, context, callback) => {
                   // 認証成功時の処理
                   return callback(null, {
                     statusCode: 200,
+                    headers: {
+                      'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/main.html'
+                    },
                     body: JSON.stringify({
                       message: 'ログイン成功',
                     }),
-                    headers: {
-                      'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/main.html'
-                    }
                   });
                 } else {
                   // パスワードが一致しない場合
