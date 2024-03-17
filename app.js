@@ -148,8 +148,8 @@ module.exports.handler = async (event, context, callback) => {
 
             console.log('Start hashing password.');
               // パスワードをハッシュ化
-              // const hashedPassword = await bcrypt.hash(plainPassword, 10);
-              const hashedPassword = plainPassword;
+              const hashedPassword = await bcrypt.hash(plainPassword, 10);
+              // const hashedPassword = plainPassword;
               console.log('Complete hashedpassword.');
 
             // データベースに新しいユーザーを追加
