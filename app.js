@@ -102,42 +102,53 @@ module.exports.handler = async (event, context, callback) => {
           // 例えば、認証処理やデータの取得などを行います
           console.log(event.queryStringParameters);
           if (event.queryStringParameters.act === "login") {
-            // TODO: Implement user authentication logic
-            const student_id = event.queryStringParameters.student_id;
-            const password = event.queryStringParameters.pass;
-            const row = await new Promise((resolve, reject) => {
-              // データベースからユーザーの認証を試みます
-              conn.get('SELECT * FROM users WHERE student_id = ?', [student_id], (err, row) => {
-                if (err) {
-                  reject(err);
-                } else {
-                  resolve(row);
-                }
-              });
-            });
-            
-            if (row) {
-              // ユーザが存在する場合、パスワードのハッシュを比較して認証します
-              const isPasswordValid = await bcrypt.compare(password, row.pass);
+            try {
+              // TODO: Implement user authentication logic
+              const student_id = event.queryStringParameters.student_id;
+              const password = event.queryStringParameters.pass;
+              console.log('get student_id, pass.');
 
-              if (isPasswordValid) {
-                // 認証成功時の処理
-                return callback(null, {
-                  statusCode: 307,
-                  body: JSON.stringify({
-                    message: 'ログイン成功',
-                  }),
-                  headers: {
-                    'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/main.html'
+              const row = await new Promise((resolve, reject) => {
+                // データベースからユーザーの認証を試みます
+                conn.get('SELECT * FROM users WHERE student_id = ?', [student_id], (err, row) => {
+                  if (err) {
+                    reject(err);
+                  } else {
+                    resolve(row);
                   }
                 });
+              });
+              
+              if (row) {
+                // ユーザが存在する場合、パスワードのハッシュを比較して認証します
+                const isPasswordValid = await bcrypt.compare(password, row.pass);
+
+                if (isPasswordValid) {
+                  // 認証成功時の処理
+                  return callback(null, {
+                    statusCode: 200,
+                    body: JSON.stringify({
+                      message: 'ログイン成功',
+                    }),
+                    headers: {
+                      'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/main.html'
+                    }
+                  });
+                } else {
+                  // パスワードが一致しない場合
+                  throw new Error('Invalid password');
+                }
               } else {
-                // パスワードが一致しない場合
-                throw new Error('Invalid password');
-              }
-            } else {
-              // ユーザが存在しない場合
-              throw new Error('User not found');
+                // ユーザが存在しない場合
+                throw new Error('User not found');
+              } 
+            } catch (error) {
+              return callback(null, {
+                statusCode: 401,
+                body: JSON.stringify({
+                  message: error.message,
+                }),
+              });
             }
           } else if(event.queryStringParameters.act==="add") {
             // 変数を取得
