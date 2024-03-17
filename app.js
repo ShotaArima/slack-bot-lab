@@ -93,9 +93,7 @@ module.exports.handler = async (event, context, callback) => {
       console.log('Before Connecting to SQLite database');
       // tmpデータベースに接続
         const conn = new sqlite3.Database(download_path, sqlite3.OPEN_READWRITE);
-        console.log('Connected to SQLite database');
-
-        
+        console.log('conn', conn);
         console.log('Connected to SQLite database');
 
         db = conn;
