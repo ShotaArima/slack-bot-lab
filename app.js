@@ -117,15 +117,20 @@ module.exports.handler = async (event, context, callback) => {
 
         db = conn;
         console.log('Before serialize');
-        // conn.serialize(async () => {
-          await conn.get("SELECT mycolumn FROM message LIMIT 1");
-          // {
-          //   if (err) {
-          //     console.error('Error querying database:', err);
-          //     return;
-          //   }
-          //   console.log(row);
-          // });
+          // await conn.get("SELECT mycolumn FROM message LIMIT 1");
+
+          await new Promise((resolve, reject) => {
+            conn.get("SELECT mycolumn FROM message LIMIT 1", (err, row) => {
+              if (err) {
+                console.error('Error querying database:', err);
+                reject(err);
+              } else {
+                console.log(row);
+                resolve(row);
+              }
+            });
+          });
+          
 
           // データベースへのアクセスや処理を行います
           // 例えば、認証処理やデータの取得などを行います
@@ -245,8 +250,6 @@ module.exports.handler = async (event, context, callback) => {
           } else {
             throw new Error('Invalid action');
           }
-        // }
-        );
 
 
         // 元のデータベースファイルと一時的なデータベースファイルを比較して変更が必要かどうかを確認
