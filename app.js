@@ -132,7 +132,7 @@ module.exports.handler = async (event, context, callback) => {
               return callback(null, {
                 statusCode: 401,
                 body: JSON.stringify({
-                  message: error.message,
+                  message: 'error.message',
                 }),
               });
             }
@@ -180,36 +180,35 @@ module.exports.handler = async (event, context, callback) => {
               // 残りのコード（ユーザー数の取得、データベースの閉じる、変更の反映など）
           
               return callback(null, {
-                statusCode: 200,
+                statusCode: 201,
+                headers: {
+                  'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/login.html'
+                },
                 body: JSON.stringify({
                   message: 'ユーザーが追加されました',
                 }),
-                headers: {
-                  'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/login.html'
-                }
               });
             } catch (error) {
               console.error('Error:', error);
           
               if (error.message === 'User already exists') {
                 return callback(null, {
-                  statusCode: 409, // Conflict
-                  body: JSON.stringify({
-                    message: 'ユーザーはすでに存在します',
-                  }),
+                  statusCode: 302,
                   headers: {
                     'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/add.html'
-                  }
+                  },                  body: JSON.stringify({
+                    message: 'ユーザーはすでに存在します',
+                  }),
                 });
               } else {
                 return callback(null, {
-                  statusCode: 500, // Internal Server Error
+                  statusCode: 500,
+                  headers: {
+                    'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/add.html'
+                  },
                   body: JSON.stringify({
                     message: 'ユーザーの追加中にエラーが発生しました',
                   }),
-                  headers: {
-                    'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/add.html'
-                  }
                 });
               }
             }
@@ -272,7 +271,7 @@ module.exports.handler = async (event, context, callback) => {
       console.error(error);
 
       return callback(null, {
-        statusCode: 500,
+        statusCode: 501,
         body: JSON.stringify({
           message: 'Internal Server Error',
         }),
