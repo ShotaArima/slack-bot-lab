@@ -3,6 +3,52 @@ const sqlite3 = require('sqlite3');
 const bcrypt = require('bcrypt');
 const AWS = require('aws-sdk');//AWS SDKの読み込み
 const fs = require('fs');
+const https = require('https');
+
+// Lambda 関数内で次の遷移先のページにメッセージを POST リクエストで送信する関数
+function sendMessageToNextPage(message, nextPagePath) {
+  const postData = JSON.stringify({ message: message });
+
+  const options = {
+    hostname: 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com', // 遷移先のページのホスト名
+    port: 443, // HTTPS の場合は通常 443
+    path: nextPagePath, // 遷移先のページのパス
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Length': postData.length
+    }
+  };
+
+  const req = https.request(options, (res) => {
+    console.log(`statusCode: ${res.statusCode}`);
+
+    res.on('data', (d) => {
+      process.stdout.write(d);
+    });
+  });
+
+  req.on('error', (error) => {
+    console.error(error);
+  });
+
+  req.write(postData);
+  req.end();
+}
+
+// Lambda 関数内でメッセージを取得し、次の遷移先のページに送信する例
+module.exports.handler = async (event, context, callback) => {
+  // メッセージの取得や処理など
+
+  const message = 'メッセージが送信されました'; // ここにメッセージを設定
+  const nextPagePath = '/next-page'; // 遷移先のページのパス
+
+  // 次の遷移先のページにメッセージを送信
+  sendMessageToNextPage(message, nextPagePath);
+
+  // Lambda 関数のレスポンスを返すなどの処理
+};
+
 
 async function copyFile(sourcePath, destinationPath) {
   return new Promise((resolve, reject) => {
@@ -192,14 +238,20 @@ module.exports.handler = async (event, context, callback) => {
               console.error('Error:', error);
           
               if (error.message === 'User already exists') {
+                const message = 'ユーザーはすでに存在します';
+                const nextPagePath = '/slack-bot/public/add.html';
+
+                // 次の遷移先のページにメッセージを送信
+                sendMessageToNextPage(message, nextPagePath);
+
                 return callback(null, {
                   statusCode: 302,
                   headers: {
-                    // 'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/add.html'
-                  },                  
-                  body: JSON.stringify({
-                    message: 'ユーザーはすでに存在します',
-                  }),
+                    'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/add.html'
+                  },
+                  // body: JSON.stringify({
+                  //   message: 'ユーザーはすでに存在します',
+                  // }),
                 });
               } else {
                 return callback(null, {
