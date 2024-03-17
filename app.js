@@ -179,19 +179,16 @@ module.exports.handler = async (event, context, callback) => {
               // const hashedPassword = await bcrypt.hash(plainPassword, 10);
               const hashedPassword = plainPassword;
               console.log('Complete hashedpassword.');
-            try{ 
-            } catch (error) {
-              console.error('Error hashing password:', error);
-              return callback(null, {
-                statusCode: 500,
-                body: JSON.stringify({
-                  message: 'Internal Server Error',
-                }),
-              });
-            }
-
-            
-
+            // try{ 
+            // } catch (error) {
+            //   console.error('Error hashing password:', error);
+            //   return callback(null, {
+            //     statusCode: 500,
+            //     body: JSON.stringify({
+            //       message: 'Internal Server Error',
+            //     }),
+            //   });
+            // }
 
             // データベースに新しいユーザーを追加
             await db.run('INSERT INTO users (student_id, name, pass) VALUES (?, ?, ?)', [student_id, name, hashedPassword] );
