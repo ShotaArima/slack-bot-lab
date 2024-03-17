@@ -10,7 +10,7 @@ function sendMessageToNextPage(message, nextPagePath) {
   const postData = JSON.stringify({ message: message });
 
   const options = {
-    hostname: 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com', // 遷移先のページのホスト名
+    hostname: 'slack-bot-real-key.s3.ap-northeast-1.amazonaws.com', // 遷移先のページのホスト名
     port: 443, // HTTPS の場合は通常 443
     path: nextPagePath, // 遷移先のページのパス
     method: 'POST',
