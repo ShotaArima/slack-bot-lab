@@ -9,20 +9,26 @@
         <h2>Add User Page</h2>
         <form action="https://0r9crej1ul.execute-api.us-east-1.amazonaws.com/dev/entry-management/events" method="get">
             <label for="student_id">Student_id(g):</label>
-            <input type="text" id="student_id" name="student_id" required>
-            <br>
+            <input type="text" id="student_id" name="student_id" required> <br>
             <label for="name">Name:</label>
-            <input type="text" id="name" name="name" required>
-            <br>
-            <label for="pass">Password:</label>
-            <input type="password" id="pass" name="pass" required>
-            <br>
+            <input type="text" id="name" name="name" required> <br>
+            <label for="pass">Password:</label> <input type="password" id="pass" name="pass" required> <br>
             <input type="hidden" name="act" value="add">
             <button type="submit">Add User</button>
         </form>
         <form action="login.html">
             <button type="submit">キャンセル</button>
-        </form>
-        <!-- <script src="./javascripts/script.js"></script> -->
+        </form> 
+        <script>
+        // ページ読み込み時に実行される関数
+        window.onload = function() {
+            // URLパラメータから message の値を取得
+            const urlParams = new URLSearchParams(window.location.search);
+            const message = urlParams.get('message');
+            // メッセージがある場合はアラートとして表示
+            if (message) {
+                alert(message); 
+            }}; 
+        </script> 
     </body>
 </html>
