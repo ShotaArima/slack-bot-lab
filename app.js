@@ -171,7 +171,7 @@ module.exports.handler = async (event, context, callback) => {
                 message: 'ユーザーが追加されました',
               }),
               headers: {
-                'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/login.html'
+                'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/login.html'
               }
             });
           } else if(event.queryStringParameters.act==="entrance"){
