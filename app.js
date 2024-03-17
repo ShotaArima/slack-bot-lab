@@ -83,20 +83,6 @@ module.exports.handler = async (event, context, callback) => {
         console.log('conn', conn);
         console.log('Connected to SQLite database');
         console.log('Before serialize');
-          // await conn.get("SELECT mycolumn FROM message LIMIT 1");
-
-          // await new Promise((resolve, reject) => {
-          //   conn.get("SELECT mycolumn FROM message LIMIT 1", (err, row) => {
-          //     if (err) {
-          //       console.error('Error querying database:', err);
-          //       reject(err);
-          //     } else {
-          //       console.log(row);
-          //       resolve(row);
-          //     }
-          //   });
-          // });
-          
 
           // データベースへのアクセスや処理を行います
           // 例えば、認証処理やデータの取得などを行います
@@ -151,86 +137,73 @@ module.exports.handler = async (event, context, callback) => {
               });
             }
           } else if(event.queryStringParameters.act==="add") {
-            // 変数を取得
-            const student_id = event.queryStringParameters.student_id;
-            const name = event.queryStringParameters.name;
-            const plainPassword = event.queryStringParameters.pass;
-            console.log('get student_id, name, pass.');
-
-            console.log('Start hashing password.');
+            try {
+              // 変数を取得
+              const student_id = event.queryStringParameters.student_id;
+              const name = event.queryStringParameters.name;
+              const plainPassword = event.queryStringParameters.pass;
+              console.log('get student_id, name, pass.');
+          
+              const row = await new Promise((resolve, reject) => {
+                // データベースからユーザーの存在を確認
+                conn.get('SELECT * FROM users WHERE student_id = ?', [student_id], (err, row) => {
+                  if (err) {
+                    reject(err);
+                  } else {
+                    resolve(row);
+                  }
+                });
+              });
+          
+              if (row) {
+                // ユーザが存在する場合、エラーを返す
+                throw new Error('User already exists');
+              }
+          
+              console.log('Start hashing password.');
               // パスワードをハッシュ化
               const hashedPassword = await bcrypt.hash(plainPassword, 10);
-              // const hashedPassword = plainPassword;
               console.log('Complete hashedpassword.');
-
-            // データベースに新しいユーザーを追加
-            await new Promise((resolve, reject) => {
-              conn.run('INSERT INTO users (student_id, name, pass) VALUES (?, ?, ?)', [student_id, name, hashedPassword], function(err) {
+          
+              // データベースに新しいユーザーを追加
+              await new Promise((resolve, reject) => {
+                conn.run('INSERT INTO users (student_id, name, pass) VALUES (?, ?, ?)', [student_id, name, hashedPassword], function(err) {
                   if (err) {
-                      reject(err);
+                    reject(err);
                   } else {
-                      resolve();
+                    resolve();
                   }
+                });
               });
-            });
-            console.log('dbrun.');
-            // console.log('Select count(*)', await conn.get('SELECT count(*) FROM users'));
-            const rows = await new Promise((resolve, reject) => {
-              conn.all('SELECT count(*) AS count FROM users', function(err, rows) {
-                if (err) {
-                  reject(err);
-                } else {
-                  resolve(rows);
-                }
-                
-              })
-            });
-            rows.forEach(function (row) {
-              console.log('Select count(*)', row.count);
-            });
-
-            
-            // コネクションを閉じる
-            await new Promise((resolve, reject) => {
-              conn.close(err => {
-                  if (err) {
-                      reject(err);
-                  } else {
-                      resolve();
-                  }
+              console.log('dbrun.');
+          
+              // 残りのコード（ユーザー数の取得、データベースの閉じる、変更の反映など）
+          
+              return callback(null, {
+                statusCode: 200,
+                body: JSON.stringify({
+                  message: 'ユーザーが追加されました',
+                }),
               });
-            });
-            console.log('db close');
-
-            // 元のデータベースファイルと一時的なデータベースファイルを比較して変更が必要かどうかを確認
-            const originalDatabaseContent = fs.readFileSync(download_path2, 'utf-8');
-            const newDatabaseContent = fs.readFileSync(download_path, 'utf-8');
-            if (originalDatabaseContent !== newDatabaseContent) {
-              // 変更がある場合のみ元のデータベースファイルに変更を適用
-              // fs.copyFileSync(download_path, 'db/slack.db'); 
-              //upload SQLite file to S3
-              const uploadParams = {
-                Bucket: 'slack-bot-real-key',
-                Key: 'db/slack.db',
-                Body: fs.readFileSync(download_path),
-              };
-              const result = await s3.upload(uploadParams).promise();
-              console.log('Uploaded', result.Location);
-              
-              console.log('変更が元のデータベースに反映されました');
-            } else {
-              console.log('変更は不要です');
-            }
-
-            return callback(null, {
-              statusCode: 307,
-              body: JSON.stringify({
-                message: 'ユーザーが追加されました',
-              }),
-              headers: {
-                'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/login.html'
+            } catch (error) {
+              console.error('Error:', error);
+          
+              if (error.message === 'User already exists') {
+                return callback(null, {
+                  statusCode: 409, // Conflict
+                  body: JSON.stringify({
+                    message: 'ユーザーはすでに存在します',
+                  }),
+                });
+              } else {
+                return callback(null, {
+                  statusCode: 500, // Internal Server Error
+                  body: JSON.stringify({
+                    message: 'ユーザーの追加中にエラーが発生しました',
+                  }),
+                });
               }
-            });
+            }
           } else if(event.queryStringParameters.act==="entrance"){
             await app.client.chat.postMessage({
               token: process.env.SLACK_BOT_TOKEN,
