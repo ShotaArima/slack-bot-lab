@@ -189,11 +189,12 @@ module.exports.handler = async (event, context, callback) => {
               console.error('Error:', error);
           
               if (error.message === 'User already exists') {
+                alert: 'ユーザーはすでに存在します',
                 return callback(null, {
                   statusCode: 409, // Conflict
                   body: JSON.stringify({
                     message: 'ユーザーはすでに存在します',
-                    alert: 'ユーザーはすでに存在します',
+                    
                   }),
                 });
               } else {
