@@ -193,6 +193,7 @@ module.exports.handler = async (event, context, callback) => {
                   statusCode: 409, // Conflict
                   body: JSON.stringify({
                     message: 'ユーザーはすでに存在します',
+                    alert: 'ユーザーはすでに存在します',
                   }),
                 });
               } else {
