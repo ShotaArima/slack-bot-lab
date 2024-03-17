@@ -155,10 +155,21 @@ module.exports.handler = async (event, context, callback) => {
             const plainPassword = event.queryStringParameters.pass;
             console.log('get student_id, name, pass.');
 
+            try {
+              // パスワードをハッシュ化
+              const hashedPassword = await bcrypt.hash(plainPassword, 10);
+              console.log('Complete hashedpassword.');
+            } catch (error) {
+              console.error('Error hashing password:', error);
+              return callback(null, {
+                statusCode: 500,
+                body: JSON.stringify({
+                  message: 'hashing password error.',
+                }),
+              });
+            }
 
-            // パスワードをハッシュ化
-            const hashedPassword = await bcrypt.hash(plainPassword, 10);
-            console.log('Complete hashedpassword.');
+            
 
 
             // データベースに新しいユーザーを追加
