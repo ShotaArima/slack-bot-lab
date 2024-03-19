@@ -220,7 +220,18 @@ module.exports.handler = async (event, context, callback) => {
                     message: 'ユーザーはすでに存在します',
                   }),
                 });
-              } else {
+              } else if (error.message === 'Passwords do not match') {
+                return callback(null, {
+                  statusCode: 303,
+                  headers: {
+                    'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/add.html'
+                  },
+                  body: JSON.stringify({
+                    message: 'パスワードが一致しません',
+                  }),
+                });
+              }
+              else {
                 return callback(null, {
                   statusCode: 500,
                   headers: {
