@@ -156,7 +156,12 @@ module.exports.handler = async (event, context, callback) => {
               const student_id = event.queryStringParameters.student_id;
               const name = event.queryStringParameters.name;
               const plainPassword = event.queryStringParameters.pass;
+              const confirmPassword = event.queryStringParameters.confirmpass;
               console.log('get student_id, name, pass.');
+
+              if (plainPassword !== confirmPassword) {
+                throw new Error('Passwords do not match');
+              }
           
               const row = await new Promise((resolve, reject) => {
                 // データベースからユーザーの存在を確認
