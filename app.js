@@ -111,6 +111,8 @@ module.exports.handler = async (event, context, callback) => {
               const row = await new Promise((resolve, reject) => {
                 // データベースからユーザーの認証を試みます
                 conn.get('SELECT * FROM users WHERE student_id = ?', [student_id], (err, row) => {
+                  console.log('get row.');
+                  console.log('row', row);
                   if (err) {
                     reject(err);
                   } else {
