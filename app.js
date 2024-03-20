@@ -181,41 +181,41 @@ module.exports.handler = async (event, context, callback) => {
 
               if (plainPassword !== confirmPassword) {
                 throw new Error('Passwords do not match');
-              }
-          
-              const row = await new Promise((resolve, reject) => {
-                // データベースからユーザーの存在を確認
-                conn.get('SELECT * FROM users WHERE student_id = ?', [student_id], (err, row) => {
-                  if (err) {
-                    reject(err);
-                  } else {
-                    resolve(row);
-                  }
+              } else {
+                
+                const row = await new Promise((resolve, reject) => {
+                  // データベースからユーザーの存在を確認
+                  conn.get('SELECT * FROM users WHERE student_id = ?', [student_id], (err, row) => {
+                    if (err) {
+                      reject(err);
+                    } else {
+                      resolve(row);
+                    }
+                  });
                 });
-              });
-          
-              if (row) {
-                // ユーザが存在する場合、エラーを返す
-                throw new Error('User already exists');
-              }
-          
-              console.log('Start hashing password.');
-              // パスワードをハッシュ化
-              const hashedPassword = await bcrypt.hash(plainPassword, 10);
-              console.log('Complete hashedpassword.');
-          
-              // データベースに新しいユーザーを追加
-              await new Promise((resolve, reject) => {
-                conn.run('INSERT INTO users (student_id, name, pass) VALUES (?, ?, ?)', [student_id, name, hashedPassword], function(err) {
-                  if (err) {
-                    reject(err);
-                  } else {
-                    resolve();
-                  }
+            
+                if (row) {
+                  // ユーザが存在する場合、エラーを返す
+                  throw new Error('User already exists');
+                }
+            
+                console.log('Start hashing password.');
+                // パスワードをハッシュ化
+                const hashedPassword = await bcrypt.hash(plainPassword, 10);
+                console.log('Complete hashedpassword.');
+            
+                // データベースに新しいユーザーを追加
+                await new Promise((resolve, reject) => {
+                  conn.run('INSERT INTO users (student_id, name, pass) VALUES (?, ?, ?)', [student_id, name, hashedPassword], function(err) {
+                    if (err) {
+                      reject(err);
+                    } else {
+                      resolve();
+                    }
+                  });
                 });
-              });
-              console.log('dbrun.');
-          
+                console.log('dbrun.');
+              }
               // 残りのコード（ユーザー数の取得、データベースの閉じる、変更の反映など）
           
               return callback(null, {
