@@ -181,6 +181,8 @@ module.exports.handler = async (event, context, callback) => {
 
               if (plainPassword !== confirmPassword) {
                 throw new Error('Passwords do not match');
+                console.log(plainPassword);
+                console.log(confirmPassword);
               } else {
                 
                 const row = await new Promise((resolve, reject) => {
