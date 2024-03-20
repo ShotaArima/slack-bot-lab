@@ -7,23 +7,23 @@
     </head>
     <body>
         <h2>Add User Page</h2>
-        <form action="https://0r9crej1ul.execute-api.us-east-1.amazonaws.com/dev/entry-management/events" method="get">
-            <tr>
+        <form action="https://0r9crej1ul.execute-api.us-east-1.amazonaws.com/dev/endivy-management/events" method="get">
+            <div>
                 <label for="student_id">学籍番号:</label>
                 <input type="text" id="student_id" name="student_id" required> <br>
-            </tr>
-            <tr>
+            </div>
+            <div>
                 <label for="name">氏名:</label>
                 <input type="text" id="name" name="name" required> <br>
-            </tr>
-            <tr>
+            </div>
+            <div>
                 <label for="pass">パスワード:</label>
                 <input type="password" id="pass" name="pass" required> <br>
-            </tr>
-            <tr>
+            </div>
+            <div>
                 <label for="confirmpass">パスワード (再確認):</label>
                 <input type="password" id="confirmpass" name="confirmpass" required> <br>
-            </tr>
+            </div>
             <input type="hidden" name="act" value="add">
             <button type="submit">Add User</button>
         </form>
