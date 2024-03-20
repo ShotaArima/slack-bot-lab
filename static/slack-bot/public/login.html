@@ -7,12 +7,14 @@
     <body>
         <h2>ログインページ</h2>
         <form action="https://0r9crej1ul.execute-api.us-east-1.amazonaws.com/dev/entry-management/events" method="get">
-            <label for="student_id">Student_id(g):</label>
-            <input type="text" id="student_id" name="student_id" required>
-            <br>
-            <label for="pass">Password:</label>
-            <input type="password" id="pass" name="pass" required>
-            <br>
+            <tr>
+                <label for="student_id">Student_id(g):</label>
+                <input type="text" id="student_id" name="student_id" required> <br>
+            </tr>
+            <tr>
+                <label for="pass">Password:</label>
+                <input type="password" id="pass" name="pass" required> <br>
+            </tr>
             <input type="hidden" name="act" value="login">
             <button type="submit">Login</button>
         </form>
