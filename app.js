@@ -120,6 +120,7 @@ module.exports.handler = async (event, context, callback) => {
                   }
                 });
               });
+              console.log('userInfo', userInfo);
               
               if (userInfo) {
                 const room_flg = userInfo.room_flg;
