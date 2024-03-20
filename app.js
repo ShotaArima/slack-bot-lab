@@ -178,8 +178,8 @@ module.exports.handler = async (event, context, callback) => {
               const plainPassword = event.queryStringParameters.pass;
               const confirmPassword = event.queryStringParameters.confirmpass;
               console.log('get student_id, name, pass.');
-              console.log(plainPassword);
-              console.log(confirmPassword);
+              console.log('plainPassword', plainPassword);
+              console.log('confirmPassword', confirmPassword);
 
               if (plainPassword !== confirmPassword) {
                 throw new Error('Passwords do not match');
