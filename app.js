@@ -169,7 +169,7 @@ module.exports.handler = async (event, context, callback) => {
               return callback(null, {
                 statusCode: 301,
                 body: JSON.stringify({
-                  message: 'error.message',
+                  message: error.message,
                 }),
               });
             }
