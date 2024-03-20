@@ -146,7 +146,7 @@ module.exports.handler = async (event, context, callback) => {
 
                   // 認証成功時の処理
                   return callback(null, {
-                    statusCode: 307,
+                    statusCode: 300,
                     headers: {
                       'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/main.html'
                     },
@@ -164,7 +164,7 @@ module.exports.handler = async (event, context, callback) => {
               } 
             } catch (error) {
               return callback(null, {
-                statusCode: 401,
+                statusCode: 301,
                 body: JSON.stringify({
                   message: 'error.message',
                 }),
@@ -221,7 +221,7 @@ module.exports.handler = async (event, context, callback) => {
               // 残りのコード（ユーザー数の取得、データベースの閉じる、変更の反映など）
           
               return callback(null, {
-                statusCode: 201,
+                statusCode: 302,
                 headers: {
                   'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/login.html'
                 },
@@ -234,7 +234,7 @@ module.exports.handler = async (event, context, callback) => {
           
               if (error.message === 'User already exists') {
                 return callback(null, {
-                  statusCode: 302,
+                  statusCode: 303,
                   headers: {
                     'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/add.html'
                   },
@@ -244,7 +244,7 @@ module.exports.handler = async (event, context, callback) => {
                 });
               } else if (error.message === 'Passwords do not match') {
                 return callback(null, {
-                  statusCode: 303,
+                  statusCode: 304,
                   headers: {
                     'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/add.html'
                   },
@@ -255,7 +255,7 @@ module.exports.handler = async (event, context, callback) => {
               }
               else {
                 return callback(null, {
-                  statusCode: 500,
+                  statusCode: 305,
                   headers: {
                     'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/add.html'
                   },
@@ -272,7 +272,7 @@ module.exports.handler = async (event, context, callback) => {
               text: '入室しました'
             });
             return {
-              statusCode: 307,
+              statusCode: 306,
               body: JSON.stringify({
                 message: 'メッセージを送信しました',
               }),
@@ -324,7 +324,7 @@ module.exports.handler = async (event, context, callback) => {
       console.error(error);
 
       return callback(null, {
-        statusCode: 501,
+        statusCode: 308,
         body: JSON.stringify({
           message: 'Internal Server Error',
         }),
