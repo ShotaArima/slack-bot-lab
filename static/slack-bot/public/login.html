@@ -2,10 +2,8 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <meta name="viewpoint" content="width=device-width, initial-scale=1.0">
-
-
-        
+        <meta name="viewpoint" content="width=device-width, initial-scale=1.0">          
+        <link rel="stylesheet" href="login.css">
     </head>
     <body>
         <h2>ログインページ</h2>
@@ -13,8 +11,8 @@
             <label for="student_id">Student_id(g):</label>
             <input type="text" id="student_id" name="student_id" required>
             <br>
-            <label for="pass">Password:</label>
-            <input type="password" id="pass" name="pass" required>
+            <label for="pass" class="positioning pararell">Password:</label>
+            <input type="password" id="pass" name="pass" class="positioning" required>
             <br>
             <input type="hidden" name="act" value="login">
             <button type="submit">Login</button>

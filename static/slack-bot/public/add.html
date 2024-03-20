@@ -4,25 +4,26 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Add User Page</title>
+        <link rel="stylesheet" href="add.css">
     </head>
     <body>
         <h2>Add User Page</h2>
         <form action="https://0r9crej1ul.execute-api.us-east-1.amazonaws.com/dev/entry-management/events" method="get">
             <tr>
-                <label for="student_id">学籍番号:</label>
+                <label for="student_id" class="pararell3">学籍番号:</label>
                 <input type="text" id="student_id" name="student_id" required> <br>
             </tr>
             <tr>
-                <label for="name">氏名:</label>
-                <input type="text" id="name" name="name" required> <br>
+                <label for="name" class="pararell2">氏名:</label>
+                <input type="text" id="name" name="name" class="positioning" required> <br>
             </tr>
             <tr>
-                <label for="pass">パスワード:</label>
-                <input type="password" id="pass" name="pass" required> <br>
+                <label for="pass" class="pararell1">パスワード:</label>
+                <input type="password" id="pass" name="pass" class="positioning" required> <br>
             </tr>
             <tr>
                 <label for="confirmPass">パスワード (再確認):</label>
-                <input type="password" id="confirmPass" name="confirmPass" required> <br>
+                <input type="password" id="confirmPass" name="confirmPass" class="positioning" required> <br>
             </tr>
             <input type="hidden" name="act" value="add">
             <button type="submit">Add User</button>
