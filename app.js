@@ -107,7 +107,7 @@ module.exports.handler = async (event, context, callback) => {
               const student_id = event.queryStringParameters.student_id;
               const password = event.queryStringParameters.pass;
               console.log('get student_id, pass.');
-
+          
               const userInfo = await new Promise((resolve, reject) => {
                 // データベースからユーザーの認証を試みます
                 conn.get('SELECT * FROM users WHERE student_id = ?', [student_id], (err, row) => {
@@ -127,12 +127,20 @@ module.exports.handler = async (event, context, callback) => {
                 const username = userInfo.name;
                 console.log('Room Flag:', room_flg);
                 console.log('User Name:', username);
-
+          
+                // userInfoに受け取った情報を格納
+                const user = {
+                  student_id: userInfo.student_id,
+                  name: userInfo.name,
+                  room_flg: userInfo.room_flg,
+                  pass: userInfo.pass,
+                  // 他の必要な情報をここに追加
+                };
+          
                 // ユーザが存在する場合、パスワードのハッシュを比較して認証します
-                const isPasswordValid = await bcrypt.compare(password, row.pass);
-
+                const isPasswordValid = await bcrypt.compare(password, user.pass);
+          
                 if (isPasswordValid) {
-
                   // メッセージの送信
                   if (room_flg === 0) {
                     await app.client.chat.postMessage({
@@ -149,7 +157,7 @@ module.exports.handler = async (event, context, callback) => {
                   } else {
                     throw new Error('Invalid room_flg');
                   }
-
+          
                   // 認証成功時の処理
                   return callback(null, {
                     statusCode: 300,
@@ -172,7 +180,7 @@ module.exports.handler = async (event, context, callback) => {
               return callback(null, {
                 statusCode: 301,
                 body: JSON.stringify({
-                  message: 'error.message',
+                  message: error.message,
                 }),
               });
             }
