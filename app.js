@@ -108,7 +108,7 @@ module.exports.handler = async (event, context, callback) => {
               const password = event.queryStringParameters.pass;
               console.log('get student_id, pass.');
 
-              const row = await new Promise((resolve, reject) => {
+              const userInfo = await new Promise((resolve, reject) => {
                 // データベースからユーザーの認証を試みます
                 conn.get('SELECT * FROM users WHERE student_id = ?', [student_id], (err, row) => {
                   console.log('get row.');
@@ -121,13 +121,16 @@ module.exports.handler = async (event, context, callback) => {
                 });
               });
               
-              if (row) {
+              if (userInfo) {
+                const room_flg = userInfo.room_flg;
+                const username = userInfo.name;
+                console.log('Room Flag:', room_flg);
+                console.log('User Name:', username);
+
                 // ユーザが存在する場合、パスワードのハッシュを比較して認証します
                 const isPasswordValid = await bcrypt.compare(password, row.pass);
 
                 if (isPasswordValid) {
-                  const username = row.name
-                  const room_flg = row.room_flg
 
                   // メッセージの送信
                   if (room_flg === 0) {
