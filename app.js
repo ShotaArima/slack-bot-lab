@@ -128,7 +128,7 @@ module.exports.handler = async (event, context, callback) => {
           // データベースへのアクセスや処理を行います
           // 例えば、認証処理やデータの取得などを行います
           console.log(event.queryStringParameters);
-          if (event.queryStringParameters.act === "login") {
+          if (event.queryStringParameters.act==="login") {
             console.log('login act.');
             try {
               // TODO: Implement user authentication logic
