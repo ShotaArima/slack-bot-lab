@@ -182,7 +182,7 @@ module.exports.handler = async (event, context, callback) => {
 
               const plainPassword = event.queryStringParameters.pass;
               console.log('plainPassword', plainPassword);
-              const confirmPassword = event.queryStringParameters.confirmpass;
+              const confirmPassword = event.queryStringParameters.confirmpass;     
               console.log('confirmPassword', confirmPassword);
 
               if (plainPassword !== confirmPassword) {
