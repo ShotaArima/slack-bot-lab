@@ -123,6 +123,7 @@ module.exports.handler = async (event, context, callback) => {
               });
               
               if (row) {
+                console.log('row exists.');
                 // ユーザが存在する場合、パスワードのハッシュを比較して認証します
                 const isPasswordValid = await bcrypt.compare(password, row.pass);
 
