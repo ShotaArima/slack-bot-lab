@@ -216,11 +216,12 @@ module.exports.handler = async (event, context, callback) => {
                     if (err) {
                       reject(err);
                     } else {
+                      console.log('dbrun.');
                       resolve();
                     }
                   });
                 });
-                console.log('dbrun.');
+                console.log('dbrun complete.');
               }
               // 残りのコード（ユーザー数の取得、データベースの閉じる、変更の反映など）
           
