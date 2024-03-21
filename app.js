@@ -117,7 +117,7 @@ module.exports.handler = async (event, context, callback) => {
                   if (err) {
                     reject(err);
                   } else {
-                    conso1e.log('before resolve row.');
+                    console.log('before resolve row.');
                     resolve(row);
                     console.log('after resolve row.');
                   }
