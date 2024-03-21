@@ -178,10 +178,11 @@ module.exports.handler = async (event, context, callback) => {
               // 変数を取得
               const student_id = event.queryStringParameters.student_id;
               const name = event.queryStringParameters.name;
-              const plainPassword = event.queryStringParameters.pass;
-              const confirmPassword = event.queryStringParameters.confirmpass;
               console.log('get student_id, name, pass.');
+
+              const plainPassword = event.queryStringParameters.pass;
               console.log('plainPassword', plainPassword);
+              const confirmPassword = event.queryStringParameters.confirmpass;
               console.log('confirmPassword', confirmPassword);
 
               if (plainPassword !== confirmPassword) {
