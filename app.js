@@ -34,6 +34,33 @@ async function copyFile(sourcePath, destinationPath) {
   });
 }
 
+// 変更をS3バケットにアップロードする関数
+async function uploadChangesToS3(filePath) {
+  try {
+    // 元のデータベースファイルの内容を取得
+    const originalDatabaseContent = fs.readFileSync('db/slack.db', 'utf-8');
+
+    // ダウンロードした新しいデータベースファイルの内容を取得
+    const newDatabaseContent = fs.readFileSync(filePath, 'utf-8');
+
+    // 内容が変更されているかどうかを確認
+    if (originalDatabaseContent !== newDatabaseContent) {
+      // 変更がある場合のみ S3 にアップロード
+      const params = {
+        Bucket: 'slack-bot-real-key',
+        Key: 'db/slack.db',
+        Body: fs.createReadStream(filePath)
+      };
+      await s3.upload(params).promise();
+      console.log('変更が元のデータベースに反映されました');
+    } else {
+      console.log('変更は不要です');
+    }
+  } catch (error) {
+    console.error('Error uploading changes to S3:', error);
+  }
+}
+
 /* 
 This sample slack application uses SocketMode
 For the companion getting started setup guide, 
@@ -228,22 +255,23 @@ module.exports.handler = async (event, context, callback) => {
               }
               // 残りのコード（ユーザー数の取得、データベースの閉じる、変更の反映など）
               // 元のデータベースファイルと一時的なデータベースファイルを比較して変更が必要かどうかを確認
-              const originalDatabaseContent = fs.readFileSync(download_path2, 'utf-8');
-              const newDatabaseContent = fs.readFileSync(download_path, 'utf-8');
-              if (originalDatabaseContent !== newDatabaseContent) {
-                // 変更がある場合のみ元のデータベースファイルに変更を適用
-                fs.copyFileSync(download_path, 'db/slack.db');
-                console.log('変更が元のデータベースに反映されました');
-              } else {
-                console.log('変更は不要です');
-              }
-              conn.close((err) => {
-                if (err) {
-                  console.error('Error closing database connection:', err);
-                  return;
-                }
-                console.log('Connection closed');
-              });
+              // const originalDatabaseContent = fs.readFileSync(download_path2, 'utf-8');
+              // const newDatabaseContent = fs.readFileSync(download_path, 'utf-8');
+              // if (originalDatabaseContent !== newDatabaseContent) {
+              //   // 変更がある場合のみ元のデータベースファイルに変更を適用
+              //   fs.copyFileSync(download_path, 'db/slack.db');
+              //   console.log('変更が元のデータベースに反映されました');
+              // } else {
+              //   console.log('変更は不要です');
+              // }
+              // conn.close((err) => {
+              //   if (err) {
+              //     console.error('Error closing database connection:', err);
+              //     return;
+              //   }
+              //   console.log('Connection closed');
+              // });
+              await uploadChangesToS3(download_path);
 
               return callback(null, {
                 statusCode: 302,
