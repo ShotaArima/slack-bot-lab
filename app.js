@@ -208,7 +208,7 @@ module.exports.handler = async (event, context, callback) => {
                 return callback(null, {
                   statusCode: 307,
                   headers: {
-                    'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/main.html'
+                    'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/in.html'
                   },
                   body: JSON.stringify({
                     message: '入室メッセージ送信しました',
@@ -241,7 +241,7 @@ module.exports.handler = async (event, context, callback) => {
                 return callback(null, {
                   statusCode: 301,
                   headers: {
-                    'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/main.html'
+                    'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/out.html'
                   },
                   body: JSON.stringify({
                     message: '退出メッセージ送信しました',
