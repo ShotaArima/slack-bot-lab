@@ -144,7 +144,6 @@ module.exports.handler = async (event, context, callback) => {
         const conn = new sqlite3.Database(download_path, sqlite3.OPEN_READWRITE);
         console.log('conn', conn);
         console.log('Connected to SQLite database');
-        console.log('Before serialize');
 
           // データベースへのアクセスや処理を行います
           // 例えば、認証処理やデータの取得などを行います
