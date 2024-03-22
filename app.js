@@ -144,7 +144,6 @@ module.exports.handler = async (event, context, callback) => {
         const conn = new sqlite3.Database(download_path, sqlite3.OPEN_READWRITE);
         console.log('conn', conn);
         console.log('Connected to SQLite database');
-        console.log('Before serialize');
 
           // データベースへのアクセスや処理を行います
           // 例えば、認証処理やデータの取得などを行います
@@ -182,8 +181,23 @@ module.exports.handler = async (event, context, callback) => {
                 const username = row.name
                 const room_flg = row.room_flg
 
-                // メッセージの送信
+
                 if (room_flg === 0) {
+                  // room_flgを1に変更
+                  await new Promise((resolve, reject) => {
+                    conn.run('UPDATE users SET room_flg = 1 WHERE student_id = ?', [student_id], function(err) {
+                      if (err) {
+                        reject(err);
+                      } else {
+                        resolve();
+                      }
+                    });
+                  });
+
+                  // データベースの変更をS3バケットにアップロード
+                  await uploadChangesToS3(download_path);
+
+                  // メッセージの送信
                   await app.client.chat.postMessage({
                     token: process.env.SLACK_BOT_TOKEN,
                     channel: 'C06FLR2DGUX',
@@ -192,15 +206,31 @@ module.exports.handler = async (event, context, callback) => {
 
                 // 認証成功時の処理
                 return callback(null, {
-                  statusCode: 300,
+                  statusCode: 307,
                   headers: {
-                    'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/main.html'
+                    'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/in.html'
                   },
                   body: JSON.stringify({
                     message: '入室メッセージ送信しました',
                   }),
                 });
                 } else if (room_flg === 1) {
+
+                  // room_flgを0に変更
+                  await new Promise((resolve, reject) => {
+                    conn.run('UPDATE users SET room_flg = 0 WHERE student_id = ?', [student_id], function(err) {
+                      if (err) {
+                        reject(err);
+                      } else {
+                        resolve();
+                      }
+                    });
+                  });
+
+                  // データベースの変更をS3バケットにアップロード
+                  await uploadChangesToS3(download_path);
+
+                  // メッセージの送信
                   await app.client.chat.postMessage({
                     token: process.env.SLACK_BOT_TOKEN,
                     channel: 'C06FLR2DGUX',
@@ -209,9 +239,9 @@ module.exports.handler = async (event, context, callback) => {
 
                 // 認証成功時の処理
                 return callback(null, {
-                  statusCode: 300,
+                  statusCode: 302,
                   headers: {
-                    'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/main.html'
+                    'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/out.html'
                   },
                   body: JSON.stringify({
                     message: '退出メッセージ送信しました',
@@ -365,11 +395,9 @@ module.exports.handler = async (event, context, callback) => {
             throw new Error('Invalid action');
           }
 
-
     } catch (error) {
       console.error('Error downloading database from S3', error);
       console.error(error);
-
       return callback(null, {
         statusCode: 308,
         body: JSON.stringify({
