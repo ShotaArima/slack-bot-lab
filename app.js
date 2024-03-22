@@ -189,15 +189,6 @@ module.exports.handler = async (event, context, callback) => {
                     channel: 'C06FLR2DGUX',
                     text: username + 'さんが入室しました'
                   });
-                } else if (room_flg === 1) {
-                  await app.client.chat.postMessage({
-                    token: process.env.SLACK_BOT_TOKEN,
-                    channel: 'C06FLR2DGUX',
-                    text: username + 'さんが退室しました'
-                  });
-                } else {
-                  throw new Error('Invalid room_flg');
-                }
 
                 // 認証成功時の処理
                 return callback(null, {
@@ -206,9 +197,29 @@ module.exports.handler = async (event, context, callback) => {
                     'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/main.html'
                   },
                   body: JSON.stringify({
-                    message: 'ログイン成功',
+                    message: '入室メッセージ送信しました',
                   }),
                 });
+                } else if (room_flg === 1) {
+                  await app.client.chat.postMessage({
+                    token: process.env.SLACK_BOT_TOKEN,
+                    channel: 'C06FLR2DGUX',
+                    text: username + 'さんが退室しました'
+                  });
+
+                // 認証成功時の処理
+                return callback(null, {
+                  statusCode: 300,
+                  headers: {
+                    'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/main.html'
+                  },
+                  body: JSON.stringify({
+                    message: '退出メッセージ送信しました',
+                  }),
+                });
+                } else {
+                  throw new Error('Invalid room_flg');
+                }
               } else {
                 // ユーザが存在しない場合
                 throw new Error('User not found');
