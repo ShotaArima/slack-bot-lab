@@ -390,11 +390,9 @@ module.exports.handler = async (event, context, callback) => {
                 'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/entrance.html'
               }
             };
-
           } else {
             throw new Error('Invalid action');
           }
-
     } catch (error) {
       console.error('Error downloading database from S3', error);
       console.error(error);
