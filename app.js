@@ -206,7 +206,7 @@ module.exports.handler = async (event, context, callback) => {
 
                 // 認証成功時の処理
                 return callback(null, {
-                  statusCode: 300,
+                  statusCode: 302,
                   headers: {
                     'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/main.html'
                   },
@@ -239,7 +239,7 @@ module.exports.handler = async (event, context, callback) => {
 
                 // 認証成功時の処理
                 return callback(null, {
-                  statusCode: 300,
+                  statusCode: 302,
                   headers: {
                     'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/main.html'
                   },
