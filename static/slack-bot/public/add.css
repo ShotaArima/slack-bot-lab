@@ -1,3 +1,10 @@
+@import
+url(https://fonts.googleapis.com/css?family=Roboto);
+body
+{
+    background-color: linen;
+    font-family:"Roboto";
+}
 h2
 {
     padding-left:35%;
@@ -38,5 +45,8 @@ button
     margin-left:25%;
     width:150px;
     height:60px;
+    border-radius:30px;
+    cursor:pointer;
     font-size:25px;
+    background-color:deepskyblue;
 }
