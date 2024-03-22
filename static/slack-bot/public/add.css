@@ -1,0 +1,42 @@
+h2
+{
+    padding-left:35%;
+    padding-top: 50px;
+    font-size:40px;
+}
+form
+{
+    padding-left:20%;
+}
+label
+{
+    font-size:30px;
+}
+input
+{
+    font-size:30px;
+}
+.positioning
+{
+    margin-top:30px;
+}
+.pararell1
+{
+    margin-left:10%;
+}
+.pararell2
+{
+    margin-left:18%;
+}
+.pararell3
+{
+    margin-left:12%;
+}
+button
+{
+    margin-top:30px;
+    margin-left:25%;
+    width:150px;
+    height:60px;
+    font-size:25px;
+}
