@@ -179,41 +179,36 @@ module.exports.handler = async (event, context, callback) => {
                 console.log('passwordd', password);
                 const isPasswordValid = await bcrypt.compare(password, row.pass);
 
-                if (isPasswordValid) {
-                  const username = row.name
-                  const room_flg = row.room_flg
+                const username = row.name
+                const room_flg = row.room_flg
 
-                  // メッセージの送信
-                  if (room_flg === 0) {
-                    await app.client.chat.postMessage({
-                      token: process.env.SLACK_BOT_TOKEN,
-                      channel: 'C06FLR2DGUX',
-                      text: username + 'さんが入室しました'
-                    });
-                  } else if (room_flg === 1) {
-                    await app.client.chat.postMessage({
-                      token: process.env.SLACK_BOT_TOKEN,
-                      channel: 'C06FLR2DGUX',
-                      text: username + 'さんが退室しました'
-                    });
-                  } else {
-                    throw new Error('Invalid room_flg');
-                  }
-
-                  // 認証成功時の処理
-                  return callback(null, {
-                    statusCode: 300,
-                    headers: {
-                      'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/main.html'
-                    },
-                    body: JSON.stringify({
-                      message: 'ログイン成功',
-                    }),
+                // メッセージの送信
+                if (room_flg === 0) {
+                  await app.client.chat.postMessage({
+                    token: process.env.SLACK_BOT_TOKEN,
+                    channel: 'C06FLR2DGUX',
+                    text: username + 'さんが入室しました'
+                  });
+                } else if (room_flg === 1) {
+                  await app.client.chat.postMessage({
+                    token: process.env.SLACK_BOT_TOKEN,
+                    channel: 'C06FLR2DGUX',
+                    text: username + 'さんが退室しました'
                   });
                 } else {
-                  // パスワードが一致しない場合
-                  throw new Error('Invalid password');
+                  throw new Error('Invalid room_flg');
                 }
+
+                // 認証成功時の処理
+                return callback(null, {
+                  statusCode: 300,
+                  headers: {
+                    'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/main.html'
+                  },
+                  body: JSON.stringify({
+                    message: 'ログイン成功',
+                  }),
+                });
               } else {
                 // ユーザが存在しない場合
                 throw new Error('User not found');
