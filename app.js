@@ -171,7 +171,7 @@ module.exports.handler = async (event, context, callback) => {
                   }
                 });
               });
-              
+              console.log('after get row.');
               if (row) {
                 console.log('row exists.');
                 // ユーザが存在する場合、パスワードのハッシュを比較して認証します
