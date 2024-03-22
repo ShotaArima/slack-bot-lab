@@ -72,7 +72,7 @@ async function uploadChangesToS3(filePath) {
         }
         console.log('Connection closed');
       });
-      
+
     } else {
       console.log('変更は不要です');
     }
@@ -118,6 +118,7 @@ const app = new App({
 // Lambda 関数のイベントを処理します
 module.exports.handler = async (event, context, callback) => {
   console.log("start handler.");
+  console.log(event.queryStringParameters);
 
   // データベースに接続(一時的にコメントアウト)
   // const db = new sqlite3.Database('db/slack.db');
