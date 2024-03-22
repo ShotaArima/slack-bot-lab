@@ -398,7 +398,6 @@ module.exports.handler = async (event, context, callback) => {
     } catch (error) {
       console.error('Error downloading database from S3', error);
       console.error(error);
-
       return callback(null, {
         statusCode: 308,
         body: JSON.stringify({
