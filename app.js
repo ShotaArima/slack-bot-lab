@@ -34,6 +34,53 @@ async function copyFile(sourcePath, destinationPath) {
   });
 }
 
+// 変更をS3バケットにアップロードする関数
+async function uploadChangesToS3(filePath) {
+  try {
+    // 元のデータベースファイルの内容を取得
+    const originalDatabaseContent = fs.readFileSync('db/slack.db', 'utf-8');
+
+    // ダウンロードした新しいデータベースファイルの内容を取得
+    const newDatabaseContent = fs.readFileSync(filePath, 'utf-8');
+
+    // 内容が変更されているかどうかを確認
+    if (originalDatabaseContent !== newDatabaseContent) {
+      // 変更がある場合のみ S3 にアップロード
+      const params = {
+        Bucket: 'slack-bot-real-key',
+        Key: 'db/slack.db',
+        Body: fs.createReadStream(filePath)
+      };
+      await s3.upload(params).promise();
+      console.log('変更が元のデータベースに反映されました');
+
+      // 変更を反映させた後のデータベースにアクセスして操作を実行する
+      const conn = new sqlite3.Database(filePath, sqlite3.OPEN_READWRITE);
+      conn.serialize(() => {
+        conn.each('SELECT * FROM users', (err, row) => {
+          if (err) {
+            console.error('Error fetching users:', err);
+            return;
+          }
+          console.log(row); // ユーザーデータをログに出力
+        });
+      });
+      conn.close((err) => {
+        if (err) {
+          console.error('Error closing database connection:', err);
+          return;
+        }
+        console.log('Connection closed');
+      });
+
+    } else {
+      console.log('変更は不要です');
+    }
+  } catch (error) {
+    console.error('Error uploading changes to S3:', error);
+  }
+}
+
 /* 
 This sample slack application uses SocketMode
 For the companion getting started setup guide, 
@@ -71,6 +118,7 @@ const app = new App({
 // Lambda 関数のイベントを処理します
 module.exports.handler = async (event, context, callback) => {
   console.log("start handler.");
+  console.log(event.queryStringParameters);
 
   // データベースに接続(一時的にコメントアウト)
   // const db = new sqlite3.Database('db/slack.db');
@@ -96,12 +144,12 @@ module.exports.handler = async (event, context, callback) => {
         const conn = new sqlite3.Database(download_path, sqlite3.OPEN_READWRITE);
         console.log('conn', conn);
         console.log('Connected to SQLite database');
-        console.log('Before serialize');
 
           // データベースへのアクセスや処理を行います
           // 例えば、認証処理やデータの取得などを行います
           console.log(event.queryStringParameters);
-          if (event.queryStringParameters.act === "login") {
+          if (event.queryStringParameters.act==="login") {
+            console.log('login act.');
             try {
               // TODO: Implement user authentication logic
               const student_id = event.queryStringParameters.student_id;
@@ -111,32 +159,96 @@ module.exports.handler = async (event, context, callback) => {
               const row = await new Promise((resolve, reject) => {
                 // データベースからユーザーの認証を試みます
                 conn.get('SELECT * FROM users WHERE student_id = ?', [student_id], (err, row) => {
+                  console.log('get row.');
+                  console.log('row', row);
                   if (err) {
                     reject(err);
                   } else {
+                    console.log('before resolve row.');
                     resolve(row);
+                    console.log('after resolve row.');
                   }
                 });
               });
-              
+              console.log('after get row.');
               if (row) {
+                console.log('row exists.');
                 // ユーザが存在する場合、パスワードのハッシュを比較して認証します
+                console.log('row.pass', row.pass);
+                console.log('passwordd', password);
                 const isPasswordValid = await bcrypt.compare(password, row.pass);
 
-                if (isPasswordValid) {
-                  // 認証成功時の処理
-                  return callback(null, {
-                    statusCode: 307,
-                    headers: {
-                      'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/main.html'
-                    },
-                    body: JSON.stringify({
-                      message: 'ログイン成功',
-                    }),
+                const username = row.name
+                const room_flg = row.room_flg
+
+
+                if (room_flg === 0) {
+                  // room_flgを1に変更
+                  await new Promise((resolve, reject) => {
+                    conn.run('UPDATE users SET room_flg = 1 WHERE student_id = ?', [student_id], function(err) {
+                      if (err) {
+                        reject(err);
+                      } else {
+                        resolve();
+                      }
+                    });
                   });
+
+                  // データベースの変更をS3バケットにアップロード
+                  await uploadChangesToS3(download_path);
+
+                  // メッセージの送信
+                  await app.client.chat.postMessage({
+                    token: process.env.SLACK_BOT_TOKEN,
+                    channel: 'C06FLR2DGUX',
+                    text: username + 'さんが入室しました'
+                  });
+
+                // 認証成功時の処理
+                return callback(null, {
+                  statusCode: 307,
+                  headers: {
+                    'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/in.html'
+                  },
+                  body: JSON.stringify({
+                    message: '入室メッセージ送信しました',
+                  }),
+                });
+                } else if (room_flg === 1) {
+
+                  // room_flgを0に変更
+                  await new Promise((resolve, reject) => {
+                    conn.run('UPDATE users SET room_flg = 0 WHERE student_id = ?', [student_id], function(err) {
+                      if (err) {
+                        reject(err);
+                      } else {
+                        resolve();
+                      }
+                    });
+                  });
+
+                  // データベースの変更をS3バケットにアップロード
+                  await uploadChangesToS3(download_path);
+
+                  // メッセージの送信
+                  await app.client.chat.postMessage({
+                    token: process.env.SLACK_BOT_TOKEN,
+                    channel: 'C06FLR2DGUX',
+                    text: username + 'さんが退室しました'
+                  });
+
+                // 認証成功時の処理
+                return callback(null, {
+                  statusCode: 302,
+                  headers: {
+                    'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/out.html'
+                  },
+                  body: JSON.stringify({
+                    message: '退出メッセージ送信しました',
+                  }),
+                });
                 } else {
-                  // パスワードが一致しない場合
-                  throw new Error('Invalid password');
+                  throw new Error('Invalid room_flg');
                 }
               } else {
                 // ユーザが存在しない場合
@@ -144,9 +256,9 @@ module.exports.handler = async (event, context, callback) => {
               } 
             } catch (error) {
               return callback(null, {
-                statusCode: 401,
+                statusCode: 301,
                 body: JSON.stringify({
-                  message: 'error.message',
+                  message: error.message,
                 }),
               });
             }
@@ -155,51 +267,55 @@ module.exports.handler = async (event, context, callback) => {
               // 変数を取得
               const student_id = event.queryStringParameters.student_id;
               const name = event.queryStringParameters.name;
-              const plainPassword = event.queryStringParameters.pass;
-              const confirmPassword = event.queryStringParameters.confirmpass;
               console.log('get student_id, name, pass.');
+
+              const plainPassword = event.queryStringParameters.pass;
+              console.log('plainPassword', plainPassword);
+              const confirmPassword = event.queryStringParameters.confirmpass;     
+              console.log('confirmPassword', confirmPassword);
 
               if (plainPassword !== confirmPassword) {
                 throw new Error('Passwords do not match');
-              }
-          
-              const row = await new Promise((resolve, reject) => {
-                // データベースからユーザーの存在を確認
-                conn.get('SELECT * FROM users WHERE student_id = ?', [student_id], (err, row) => {
-                  if (err) {
-                    reject(err);
-                  } else {
-                    resolve(row);
-                  }
+              } else {
+                
+                const row = await new Promise((resolve, reject) => {
+                  // データベースからユーザーの存在を確認
+                  conn.get('SELECT * FROM users WHERE student_id = ?', [student_id], (err, row) => {
+                    if (err) {
+                      reject(err);
+                    } else {
+                      resolve(row);
+                    }
+                  });
                 });
-              });
-          
-              if (row) {
-                // ユーザが存在する場合、エラーを返す
-                throw new Error('User already exists');
-              }
-          
-              console.log('Start hashing password.');
-              // パスワードをハッシュ化
-              const hashedPassword = await bcrypt.hash(plainPassword, 10);
-              console.log('Complete hashedpassword.');
-          
-              // データベースに新しいユーザーを追加
-              await new Promise((resolve, reject) => {
-                conn.run('INSERT INTO users (student_id, name, pass) VALUES (?, ?, ?)', [student_id, name, hashedPassword], function(err) {
-                  if (err) {
-                    reject(err);
-                  } else {
-                    resolve();
-                  }
+            
+                if (row) {
+                  // ユーザが存在する場合、エラーを返す
+                  throw new Error('User already exists');
+                }
+            
+                console.log('Start hashing password.');
+                // パスワードをハッシュ化
+                const hashedPassword = await bcrypt.hash(plainPassword, 10);
+                console.log('Complete hashedpassword.');
+            
+                // データベースに新しいユーザーを追加
+                await new Promise((resolve, reject) => {
+                  conn.run('INSERT INTO users (student_id, name, pass) VALUES (?, ?, ?)', [student_id, name, hashedPassword], function(err) {
+                    if (err) {
+                      reject(err);
+                    } else {
+                      console.log('dbrun.');
+                      resolve();
+                    }
+                  });
                 });
-              });
-              console.log('dbrun.');
-          
-              // 残りのコード（ユーザー数の取得、データベースの閉じる、変更の反映など）
-          
+                console.log('dbrun complete.');
+              }
+              await uploadChangesToS3(download_path);
+
               return callback(null, {
-                statusCode: 201,
+                statusCode: 302,
                 headers: {
                   'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/login.html'
                 },
@@ -212,7 +328,7 @@ module.exports.handler = async (event, context, callback) => {
           
               if (error.message === 'User already exists') {
                 return callback(null, {
-                  statusCode: 302,
+                  statusCode: 303,
                   headers: {
                     'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/add.html'
                   },
@@ -222,7 +338,7 @@ module.exports.handler = async (event, context, callback) => {
                 });
               } else if (error.message === 'Passwords do not match') {
                 return callback(null, {
-                  statusCode: 303,
+                  statusCode: 304,
                   headers: {
                     'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/add.html'
                   },
@@ -233,7 +349,7 @@ module.exports.handler = async (event, context, callback) => {
               }
               else {
                 return callback(null, {
-                  statusCode: 500,
+                  statusCode: 305,
                   headers: {
                     'Location': 'https://slack-bot-real-key.s3.ap-northeast-1.amazonaws.com/slack-bot/public/add.html'
                   },
@@ -250,7 +366,7 @@ module.exports.handler = async (event, context, callback) => {
               text: '入室しました'
             });
             return {
-              statusCode: 307,
+              statusCode: 306,
               body: JSON.stringify({
                 message: 'メッセージを送信しました',
               }),
@@ -279,30 +395,11 @@ module.exports.handler = async (event, context, callback) => {
             throw new Error('Invalid action');
           }
 
-
-        // 元のデータベースファイルと一時的なデータベースファイルを比較して変更が必要かどうかを確認
-        const originalDatabaseContent = fs.readFileSync(download_path2, 'utf-8');
-        const newDatabaseContent = fs.readFileSync(download_path, 'utf-8');
-        if (originalDatabaseContent !== newDatabaseContent) {
-          // 変更がある場合のみ元のデータベースファイルに変更を適用
-          fs.copyFileSync(download_path, 'db/slack.db');
-          console.log('変更が元のデータベースに反映されました');
-        } else {
-          console.log('変更は不要です');
-        }
-        conn.close((err) => {
-          if (err) {
-            console.error('Error closing database connection:', err);
-            return;
-          }
-          console.log('Connection closed');
-        });
     } catch (error) {
       console.error('Error downloading database from S3', error);
       console.error(error);
-
       return callback(null, {
-        statusCode: 501,
+        statusCode: 308,
         body: JSON.stringify({
           message: 'Internal Server Error',
         }),
