@@ -6,3 +6,9 @@ jspm_packages
 .serverless
 
 .DS_Store
+
+# local env files
+/output
+
+# Drawio
+*.drawio
